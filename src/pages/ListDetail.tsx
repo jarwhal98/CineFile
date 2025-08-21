@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
@@ -27,7 +27,7 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import { useNavigate as useRRNavigate } from 'react-router-dom'
 import RatingDialog from '../features/movies/RatingDialog'
 import { db } from '../store/db'
-import { posterUrl } from '../services/tmdb'
+import { posterUrl, fetchMovie, getTmdbKey } from '../services/tmdb'
 import { useAggregatedMovies } from '../features/movies/useAggregatedMovies'
 
 export default function ListDetail() {
@@ -70,6 +70,38 @@ export default function ListDetail() {
   const titleText = isAll ? 'All Lists' : list?.name || id
   const handleOpenMenu = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget)
   const handleCloseMenu = () => setAnchorEl(null)
+
+  // Background enrichment: fetch runtime/genres for a few missing entries
+  const inflightRef = useRef<Set<number>>(new Set())
+  const toEnrich = useMemo(() => {
+    const pool = isAll ? aggregatedRows : withMovies.map((x) => x.movie)
+    return pool
+      .filter((m: any) => m && (!m.runtime || !(m.genres && m.genres.length)))
+      .slice(0, 5) as any[]
+  }, [isAll, aggregatedRows, withMovies])
+  useEffect(() => {
+    const key = getTmdbKey()
+    if (!key) return
+    ;(async () => {
+      for (const m of toEnrich) {
+        if (!m?.id || inflightRef.current.has(m.id)) continue
+        inflightRef.current.add(m.id)
+        try {
+          const fresh = await fetchMovie(m.id)
+          await db.movies.update(m.id, {
+            runtime: fresh.runtime ?? m.runtime,
+            genres: fresh.genres ?? m.genres,
+            overview: fresh.overview ?? m.overview,
+            backdropPath: fresh.backdropPath ?? m.backdropPath
+          })
+        } catch {
+          // ignore
+        } finally {
+          inflightRef.current.delete(m.id)
+        }
+      }
+    })()
+  }, [toEnrich])
 
   return (
     <Stack spacing={2}>
@@ -208,7 +240,7 @@ export default function ListDetail() {
                 sx={{
                   bgcolor: active ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.04)',
                   color: '#111',
-                  borderRadius: 2,
+                  borderRadius: 1,
                   px: 1,
                   height: 24,
                   '& .MuiChip-label': { py: 0 },
@@ -258,15 +290,14 @@ export default function ListDetail() {
           return (
             <Card
               key={`k-${movie?.id}-${rank}`}
-              sx={{
-  borderRadius: 2,
+      sx={{
+    borderRadius: 1,
         boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
         p: 0,
         
         background: 'rgba(255,255,255,0.7)',
         backdropFilter: 'blur(10px)',
         border: '1px solid rgba(0,0,0,0.06)',
-                mb: 2,
                 position: 'relative',
                 overflow: 'hidden',
                 '&::after': {
@@ -311,38 +342,38 @@ export default function ListDetail() {
                     }}
                   />
                 )}
-                <Stack direction="row" alignItems="center" spacing={2} sx={{ p: 2, position: 'relative', zIndex: 1 }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 40 }}>
-                    <Chip
-                      label={`#${rank}`}
-                      size="medium"
-                      sx={{ fontWeight: 700, fontSize: 18, bgcolor: 'rgba(0,0,0,0.04)', color: '#111', mb: 1, borderRadius: 2 }}
-                    />
-                  </Box>
+                <Stack direction="row" alignItems="flex-start" spacing={1.5} sx={{ p: 1.25, position: 'relative', zIndex: 1 }}>
                   {poster && (
-                    <CardMedia
-                      component="img"
-                      image={poster}
-                      alt={movie?.title}
-                      sx={{ width: 84, height: 126, borderRadius: 2, boxShadow: '0 8px 20px rgba(0,0,0,0.12)', objectFit: 'cover' }}
-                    />
+                    <Box sx={{ position: 'relative' }}>
+                      <CardMedia
+                        component="img"
+                        image={poster}
+                        alt={movie?.title}
+                        sx={{ width: 84, height: 126, borderRadius: 1, boxShadow: '0 8px 20px rgba(0,0,0,0.12)', objectFit: 'cover' }}
+                      />
+                      {typeof rank === 'number' && (
+                        <Box sx={{ position: 'absolute', top: 6, left: 6, borderRadius: 999, px: 0.9, py: 0.2, bgcolor: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.08)', backdropFilter: 'blur(8px)', fontWeight: 800, fontSize: 14, color: '#111', lineHeight: 1 }}>
+                          {rank}
+                        </Box>
+                      )}
+                    </Box>
                   )}
-                  <CardContent sx={{ flex: 1, p: 0, pl: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, fontSize: 20, mb: 0.5 }} noWrap>
+                  <CardContent sx={{ flex: 1, p: 0, pl: 1.5 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 800, fontSize: 20, mb: 0.25 }} noWrap>
                       {movie?.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 15, mb: 0.5 }} noWrap>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 15, mb: 0.25 }} noWrap>
                       {movie?.year} • {(movie?.directors || []).join(', ')}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 14, mb: 0.5 }} noWrap>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 14, mb: 0.25 }} noWrap>
                       {movie?.runtime ? `${movie.runtime} min` : ''}{movie?.runtime && genres ? ' • ' : ''}{genres}
                     </Typography>
                     {movie?.cast && movie.cast.length > 0 && (
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: 14 }} noWrap>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: 14, mb: 0.25 }} noWrap>
                         {(movie.cast || []).slice(0, 3).join(', ')}
                       </Typography>
                     )}
-                      <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 1 }}>
+                      <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
                         {/* Ratings visuals: red eye • public rating • your rating */}
                         <Box aria-label="ratings" sx={{ display: 'flex', alignItems: 'center', color: '#E53935' }}>
                           <VisibilityRoundedIcon fontSize="small" />

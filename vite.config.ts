@@ -6,6 +6,10 @@ import { configDefaults } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 5174,
+    strictPort: true
+  },
   // Vitest config (ignored by Vite types but picked up by Vitest)
   test: {
     environment: 'jsdom',

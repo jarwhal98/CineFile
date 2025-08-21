@@ -9,7 +9,7 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import { db } from '../store/db'
 import { posterUrl } from '../services/tmdb'
 import RatingDialog from '../features/movies/RatingDialog'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { fetchMovie } from '../services/tmdb'
 
@@ -53,11 +53,35 @@ export default function MoviePage() {
       }
     })()
   }, [movieId, movie])
+  // Measurement refs to keep poster height aligned to right content
+  const titleRef = useRef<HTMLDivElement | null>(null)
+  const ratingsRef = useRef<HTMLDivElement | null>(null)
+  const [matchHeight, setMatchHeight] = useState<number | undefined>(undefined)
+  useLayoutEffect(() => {
+    const compute = () => {
+      const t = titleRef.current?.getBoundingClientRect()
+      const r = ratingsRef.current?.getBoundingClientRect()
+      if (t && r) {
+        const h = Math.max(120, Math.round(r.bottom - t.top))
+        setMatchHeight(h)
+      }
+    }
+    compute()
+    const ro = new ResizeObserver(() => compute())
+    if (titleRef.current) ro.observe(titleRef.current)
+    if (ratingsRef.current) ro.observe(ratingsRef.current)
+    window.addEventListener('resize', compute)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', compute)
+    }
+  }, [])
 
   if (!movie) return <Box sx={{ p: 3 }}><Typography>Loading…</Typography></Box>
 
   const poster = posterUrl(movie.posterPath)
   const backdrop = posterUrl(movie.backdropPath) || poster
+
 
   return (
     <Box sx={{ p: 2 }}>
@@ -70,7 +94,7 @@ export default function MoviePage() {
     <Box
         sx={{
           position: 'relative',
-      borderRadius: 2,
+      borderRadius: 1,
           overflow: 'hidden',
           background: 'rgba(255,255,255,0.7)',
           backdropFilter: 'blur(10px)',
@@ -104,22 +128,20 @@ export default function MoviePage() {
             Rate
           </Button>
         </Box>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} sx={{ position: 'relative', zIndex: 1, p: 2.5 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} sx={{ position: 'relative', zIndex: 1, p: 2.5, alignItems: 'stretch' }}>
+          {/* Poster sized to match right content from title top to ratings row bottom */}
           {poster && (
-            // eslint-disable-next-line jsx-a11y/alt-text
-            <img src={poster} style={{ width: 160, height: 240, borderRadius: 16, boxShadow: '0 18px 40px rgba(0,0,0,0.25)', objectFit: 'cover' }} />
+            <PosterWithRank poster={poster} rank={typeof currentRank === 'number' ? currentRank : undefined} height={matchHeight} />
           )}
           <Stack spacing={1} sx={{ flex: 1 }}>
             <Stack direction="row" alignItems="center" spacing={1.25}>
-              <Typography variant="h4" sx={{ fontFamily: 'Times New Roman, Georgia, serif', color: '#111' }}>{movie.title}</Typography>
-              {typeof currentRank === 'number' && (
-                <Chip label={`#${currentRank}`} size="small" sx={{ bgcolor: '#FAD4D8', color: '#8B2731', fontWeight: 700, borderRadius: 1.5 }} />
-              )}
+              <Typography ref={titleRef} variant="h4" sx={{ fontFamily: 'Times New Roman, Georgia, serif', color: '#111' }}>{movie.title}</Typography>
+              {/* rank moved to poster */}
             </Stack>
             <Typography variant="body1" color="text.secondary">
               {movie.year} • {movie.runtime ? `${movie.runtime} min` : ''}{movie.runtime ? ' • ' : ''}{(movie.directors || []).join(', ')}
             </Typography>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
+            <Stack ref={ratingsRef} direction="row" spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
               {/* Toggle seen by tapping eye */}
               <IconButton
                 size="small"
@@ -204,6 +226,43 @@ export default function MoviePage() {
           setRate(null)
         }}
       />
+    </Box>
+  )
+}
+
+function PosterWithRank({ poster, rank, height }: { poster: string; rank?: number; height?: number }) {
+  return (
+    <Box sx={{ position: 'relative' }}>
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      <img
+        src={poster}
+        style={{
+          width: 160,
+          height: height ? `${height}px` : '240px',
+          borderRadius: 6,
+          objectFit: 'cover',
+          boxShadow: '0 18px 40px rgba(0,0,0,0.25)'
+        }}
+      />
+      {typeof rank === 'number' && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 8,
+            left: 8,
+            px: 1.25,
+            py: 0.25,
+            borderRadius: 999,
+            color: '#111',
+            fontWeight: 800,
+            background: 'rgba(255,255,255,0.8)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(0,0,0,0.08)'
+          }}
+        >
+          {rank}
+        </Box>
+      )}
     </Box>
   )
 }

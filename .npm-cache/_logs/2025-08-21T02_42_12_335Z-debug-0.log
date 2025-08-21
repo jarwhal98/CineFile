@@ -1,0 +1,31 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.2
+2 info using node@v22.17.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/jonathanwerle/Desktop/Command Center/CineFile/.npmrc
+5 silly config load:file:/Users/jonathanwerle/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm run build:types
+8 verbose argv "run" "--loglevel" "silent" "build:types"
+9 verbose logfile logs-max:10 dir:/Users/jonathanwerle/Desktop/Command Center/CineFile/.npm-cache/_logs/2025-08-21T02_42_12_335Z-
+10 verbose logfile /Users/jonathanwerle/Desktop/Command Center/CineFile/.npm-cache/_logs/2025-08-21T02_42_12_335Z-debug-0.log
+11 silly logfile done cleaning log files
+12 verbose stack Error: Missing script: "build:types"
+12 verbose stack
+12 verbose stack To see a list of scripts, run:
+12 verbose stack   npm run
+12 verbose stack     at #run (/usr/local/lib/node_modules/npm/lib/commands/run-script.js:111:13)
+12 verbose stack     at async RunScript.exec (/usr/local/lib/node_modules/npm/lib/commands/run-script.js:40:7)
+12 verbose stack     at async Npm.exec (/usr/local/lib/node_modules/npm/lib/npm.js:207:9)
+12 verbose stack     at async module.exports (/usr/local/lib/node_modules/npm/lib/cli/entry.js:74:5)
+13 error Missing script: "build:types"
+13 error
+13 error To see a list of scripts, run:
+13 error   npm run
+14 verbose cwd /Users/jonathanwerle/Desktop/Command Center/CineFile
+15 verbose os Darwin 25.0.0
+16 verbose node v22.17.0
+17 verbose npm  v10.9.2
+18 verbose exit 1
+19 verbose code 1
+20 error A complete log of this run can be found in: /Users/jonathanwerle/Desktop/Command Center/CineFile/.npm-cache/_logs/2025-08-21T02_42_12_335Z-debug-0.log
