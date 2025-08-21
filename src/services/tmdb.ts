@@ -4,6 +4,9 @@ const API_BASE = 'https://api.themoviedb.org/3'
 const IMG_BASE = 'https://image.tmdb.org/t/p/w342'
 
 export function getTmdbKey() {
+  // Prefer a build-time env key if provided; fallback to localStorage
+  const envKey = (import.meta as any)?.env?.VITE_TMDB_API_KEY as string | undefined
+  if (envKey && envKey.trim()) return envKey.trim()
   return localStorage.getItem('cinefile.tmdbKey') || ''
 }
 

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
 import App from './App'
+import { seedIfEmpty, recomputeUserTopList } from './store/db'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
 const theme = createTheme({
@@ -21,6 +22,11 @@ const theme = createTheme({
   },
   shape: { borderRadius: 12 }
 })
+
+// Kick off seeding in the background; UI mounts immediately
+seedIfEmpty()
+// Also compute the user's top list once at startup
+recomputeUserTopList().catch(() => {})
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

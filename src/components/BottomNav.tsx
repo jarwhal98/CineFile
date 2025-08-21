@@ -1,6 +1,5 @@
 import { Paper, BottomNavigation, BottomNavigationAction } from '@mui/material'
 import ListIcon from '@mui/icons-material/List'
-import BookmarkIcon from '@mui/icons-material/Bookmark'
 import SearchIcon from '@mui/icons-material/Search'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { useEffect, useState } from 'react'
@@ -12,10 +11,9 @@ export default function BottomNav() {
   const [value, setValue] = useState(0)
 
   useEffect(() => {
-    if (location.pathname.startsWith('/lists')) setValue(0)
-    else if (location.pathname.startsWith('/movies')) setValue(1)
-    else if (location.pathname.startsWith('/search')) setValue(2)
-    else if (location.pathname.startsWith('/settings')) setValue(3)
+  if (location.pathname.startsWith('/lists')) setValue(0)
+    else if (location.pathname.startsWith('/search')) setValue(1)
+    else if (location.pathname.startsWith('/settings')) setValue(2)
   }, [location.pathname])
 
   return (
@@ -40,14 +38,12 @@ export default function BottomNav() {
         value={value}
         onChange={(_, newValue) => {
           setValue(newValue)
-          if (newValue === 0) navigate('/lists')
-          if (newValue === 1) navigate('/movies')
-          if (newValue === 2) navigate('/search')
-          if (newValue === 3) navigate('/settings')
+          if (newValue === 0) navigate('/lists/manage')
+          if (newValue === 1) navigate('/search')
+          if (newValue === 2) navigate('/settings')
         }}
       >
         <BottomNavigationAction label="Lists" icon={<ListIcon />} />
-        <BottomNavigationAction label="Watchlist" icon={<BookmarkIcon />} />
         <BottomNavigationAction label="Search" icon={<SearchIcon />} />
         <BottomNavigationAction label="Settings" icon={<SettingsIcon />} />
       </BottomNavigation>

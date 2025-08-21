@@ -1,12 +1,12 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
-import Dashboard from './pages/Dashboard'
-import Movies from './pages/Movies'
+import ListsManage from './pages/Lists'
 import Settings from './pages/Settings'
 import React, { Suspense, useEffect } from 'react'
 import { db } from './store/db'
 import ListDetail from './pages/ListDetail'
 import MoviePage from './pages/Movie'
+import SearchPage from './pages/Search'
 const AddList = React.lazy(() => import('./pages/AddList'))
 
 export default function App() {
@@ -21,15 +21,21 @@ export default function App() {
     <AppLayout>
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<RootRedirect />} />
           <Route path="/lists" element={<ListDetail />} />
+          <Route path="/lists/manage" element={<ListsManage />} />
           <Route path="/lists/add" element={<AddList />} />
           <Route path="/lists/:id" element={<ListDetail />} />
-          <Route path="/movies" element={<Movies />} />
           <Route path="/movie/:id" element={<MoviePage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </Suspense>
     </AppLayout>
   )
+}
+
+function RootRedirect() {
+  const last = (typeof localStorage !== 'undefined') ? localStorage.getItem('cinefile:lastListId') : null
+  return <Navigate to={last ? `/lists/${last}` : '/lists'} replace />
 }

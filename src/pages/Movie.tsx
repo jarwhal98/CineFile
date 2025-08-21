@@ -177,44 +177,35 @@ export default function MoviePage() {
                 ))}
               </Stack>
             )}
-            {movie.genres && movie.genres.length > 0 && (
-              <Chip label={movie.genres[0]} size="small" sx={{ width: 'fit-content', mt: 0.5, borderRadius: 999, px: 1, height: 26, bgcolor: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.06)', backdropFilter: 'blur(6px)' }} />
-            )}
             {movie.overview && (
               <Typography variant="body1" sx={{ mt: 1 }}>{movie.overview}</Typography>
+            )}
+            {/* Cast inside card */}
+            {movie.cast && movie.cast.length > 0 && (
+              <Box sx={{ mt: 1.25 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5 }}>Cast</Typography>
+                <Typography variant="body2" color="text.secondary">{(movie.cast || []).join(', ')}</Typography>
+              </Box>
+            )}
+            {/* Featured In inside card */}
+            {lists && lists.length > 0 && (
+              <Box sx={{ mt: 1.25 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5 }}>Featured In</Typography>
+                <Stack spacing={1}>
+                  {lists.map((l) => (
+                    <Stack key={l.listId} direction="row" alignItems="center" spacing={1.5} sx={{ background: 'rgba(255,255,255,0.65)', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 2, px: 1, py: 0.75 }}>
+                      <Chip label={`#${l.rank ?? '—'}`} size="small" sx={{ bgcolor: 'rgba(255,0,0,0.08)' }} />
+                      <Typography sx={{ flex: 1 }} variant="body2">{l.name}</Typography>
+                      {l.source && <Chip label={l.source} size="small" />}
+                    </Stack>
+                  ))}
+                </Stack>
+              </Box>
             )}
           </Stack>
         </Stack>
       </Box>
-      {/* Overview */}
-      {movie.overview && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="h5" sx={{ mb: 1 }}>Overview</Typography>
-          <Typography variant="body1" color="text.secondary">{movie.overview}</Typography>
-        </Box>
-      )}
-      {/* Cast */}
-      {movie.cast && movie.cast.length > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="h5" sx={{ mb: 1 }}>Cast</Typography>
-          <Typography variant="body1" color="text.secondary">{(movie.cast || []).join(', ')}</Typography>
-        </Box>
-      )}
-      {/* Featured In */}
-      {lists && lists.length > 0 && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="h5" sx={{ mb: 1 }}>Featured In</Typography>
-          <Stack spacing={1}>
-            {lists.map((l) => (
-              <Stack key={l.listId} direction="row" alignItems="center" spacing={2} sx={{ background: 'rgba(255,255,255,0.7)', border: '1px solid rgba(0,0,0,0.06)', borderRadius: 3, px: 1.5, py: 1 }}>
-                <Chip label={`#${l.rank ?? '—'}`} size="small" sx={{ bgcolor: 'rgba(255,0,0,0.08)' }} />
-                <Typography sx={{ flex: 1 }}>{l.name}</Typography>
-                {l.source && <Chip label={l.source} size="small" />}
-              </Stack>
-            ))}
-          </Stack>
-        </Box>
-      )}
+      {/* All content is now inside the main card */}
       <RatingDialog
         open={!!rate}
         initialRating={rate?.rating}
@@ -250,14 +241,15 @@ function PosterWithRank({ poster, rank, height }: { poster: string; rank?: numbe
             position: 'absolute',
             top: 8,
             left: 8,
-            px: 1.25,
-            py: 0.25,
+            px: 1.1,
+            py: 0.35,
             borderRadius: 999,
             color: '#111',
             fontWeight: 800,
-            background: 'rgba(255,255,255,0.8)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(0,0,0,0.08)'
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.55) 100%)',
+            border: '1px solid rgba(255,255,255,0.6)',
+            boxShadow: '0 6px 14px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(0,0,0,0.06)',
+            backdropFilter: 'blur(10px) saturate(140%)'
           }}
         >
           {rank}

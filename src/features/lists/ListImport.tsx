@@ -24,9 +24,21 @@ export default function ListImport() {
     const file = e.target.files?.[0]
     if (!file) return
 
-  const slug = file.name.replace(/\.[^/.]+$/, '')
-  const listId = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-  const list: ListDef = { id: listId, name: slug, source: file.name }
+    const base = file.name.replace(/\.[^/.]+$/, '')
+    const listId = base.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    const now = new Date().toISOString()
+    const list: ListDef = {
+      id: listId,
+      name: base,
+      source: file.name,
+      slug: base.split(/[\s:_-]/)[0] || 'Imported',
+      createdAt: now,
+      updatedAt: now,
+      createdBy: 'import',
+      visibility: 'public',
+      itemCount: 0,
+      count: 0
+    }
 
     let parsed: any[] = []
     try {
@@ -61,10 +73,11 @@ export default function ListImport() {
         continue
       }
       count++
-      items.push({ id: `${listId}:${rank ?? count}`, listId, movieId: tmdbId, rank })
+        items.push({ id: `${listId}:${rank ?? count}`, listId, movieId: tmdbId, rank, addedAt: now })
     }
 
-  list.count = count
+    list.count = count
+    list.itemCount = count
 
     try {
       await db.transaction('rw', db.lists, db.listItems, async () => {
@@ -72,7 +85,8 @@ export default function ListImport() {
         // remove existing items for this list
         const existing = await db.listItems.where('listId').equals(listId).toArray()
         if (existing.length) await db.listItems.bulkDelete(existing.map((i) => i.id))
-        if (items.length) await db.listItems.bulkPut(items)
+          if (items.length) await db.listItems.bulkPut(items)
+          await db.lists.update(listId, { itemCount: items.length, count: items.length, updatedAt: new Date().toISOString() })
       })
       // Fetch movie details outside the transaction
       const missing = items.map((i) => i.movieId)

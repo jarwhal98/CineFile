@@ -10,7 +10,7 @@ export function AppLayout({ children }: PropsWithChildren) {
   return (
     <Box sx={{ display: 'flex', background: '#FAFAF8', minHeight: '100vh' }}>
       <CssBaseline />
-      <Box component="main" sx={{ flexGrow: 1, p: 3, width: '100%' }}>
+      <Box component="main" sx={{ flexGrow: 1, p: 3, pb: 12, width: '100%', height: '100vh', overflowY: 'auto' }}>
         <Box sx={{ maxWidth: 900, mx: 'auto' }}>{children}</Box>
       </Box>
       <BottomNav />

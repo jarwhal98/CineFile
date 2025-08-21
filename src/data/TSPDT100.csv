@@ -1,0 +1,101 @@
+Pos,2024,Title,Director,Year,Country,Mins
+1,1,Citizen Kane,"Welles, Orson",1941,USA,119
+2,2,Vertigo,"Hitchcock, Alfred",1958,USA,128
+3,3,2001: A Space Odyssey,"Kubrick, Stanley",1968,UK,139
+4,4,Tokyo Story,"Ozu, Yasujiro",1953,Japan,134
+5,5,"Rules of the Game, The","Renoir, Jean",1939,France,113
+6,6,"Godfather, The","Coppola, Francis Ford",1972,USA,175
+7,7,8½,"Fellini, Federico",1963,Italy,135
+8,8,Sunrise: A Song of Two Humans,"Murnau, F.W.",1927,USA,110
+9,9,"Searchers, The","Ford, John",1956,USA,119
+10,10,Seven Samurai,"Kurosawa, Akira",1954,Japan,200
+11,11,Singin' in the Rain,"Donen, Stanley & Gene Kelly",1952,USA,102
+12,12,"Jeanne Dielman, 23 Quai du Commerce, 1080 Bruxelles","Akerman, Chantal",1975,Belgium,201
+13,13,Apocalypse Now,"Coppola, Francis Ford",1979,USA,150
+14,15,Bicycle Thieves,"De Sica, Vittorio",1948,Italy,89
+15,14,Taxi Driver,"Scorsese, Martin",1976,USA,113
+16,16,Persona,"Bergman, Ingmar",1966,Sweden,83
+17,17,In the Mood for Love,Wong Kar-wai,2000,Hong Kong,97
+18,19,Breathless,"Godard, Jean-Luc",1960,France,89
+19,18,"Passion of Joan of Arc, The","Dreyer, Carl Theodor",1928,France,110
+20,20,"Atalante, L'","Vigo, Jean",1934,France,89
+21,21,Battleship Potemkin,"Eisenstein, Sergei",1925,USSR,71
+22,22,Man with a Movie Camera,"Vertov, Dziga",1929,USSR,80
+23,23,Mirror,"Tarkovsky, Andrei",1975,USSR,107
+24,24,Rashomon,"Kurosawa, Akira",1950,Japan,88
+25,25,City Lights,"Chaplin, Charles",1931,USA,86
+26,28,Psycho,"Hitchcock, Alfred",1960,USA,109
+27,26,"400 Blows, The","Truffaut, François",1959,France,99
+28,27,Andrei Rublev,"Tarkovsky, Andrei",1966,USSR,185
+29,29,Au hasard Balthazar,"Bresson, Robert",1966,France,95
+30,30,Mulholland Dr.,"Lynch, David",2001,USA,147
+31,32,Some Like it Hot,"Wilder, Billy",1959,USA,121
+32,33,Ordet,"Dreyer, Carl Theodor",1955,Denmark,125
+33,31,"Godfather Part II, The","Coppola, Francis Ford",1974,USA,200
+34,34,"Dolce vita, La","Fellini, Federico",1960,Italy,175
+35,35,Raging Bull,"Scorsese, Martin",1980,USA,129
+36,36,"Night of the Hunter, The","Laughton, Charles",1955,USA,92
+37,37,"Avventura, L'","Antonioni, Michelangelo",1960,Italy,145
+38,38,Casablanca,"Curtiz, Michael",1942,USA,102
+39,41,Blade Runner,"Scott, Ridley",1982,USA,118
+40,39,Rear Window,"Hitchcock, Alfred",1954,USA,112
+41,45,Touch of Evil,"Welles, Orson",1958,USA,108
+42,40,Playtime,"Tati, Jacques",1967,France,108
+43,46,Sunset Blvd.,"Wilder, Billy",1950,USA,110
+44,43,Barry Lyndon,"Kubrick, Stanley",1975,UK,183
+45,42,Contempt,"Godard, Jean-Luc",1963,France,103
+46,44,Pather Panchali,"Ray, Satyajit",1955,India,112
+47,48,Close-Up,"Kiarostami, Abbas",1990,Iran,98
+48,47,Stalker,"Tarkovsky, Andrei",1979,USSR,160
+49,49,Lawrence of Arabia,"Lean, David",1962,UK,216
+50,50,"General, The","Keaton, Buster & Clyde Bruckman",1926,USA,74
+51,52,Modern Times,"Chaplin, Charles",1936,USA,89
+52,51,Beau travail,"Denis, Claire",1999,France,92
+53,59,"Apartment, The","Wilder, Billy",1960,USA,125
+54,55,"Third Man, The","Reed, Carol",1949,UK,104
+55,54,M,"Lang, Fritz",1931,Germany,99
+56,53,Late Spring,"Ozu, Yasujiro",1949,Japan,108
+57,56,North by Northwest,"Hitchcock, Alfred",1959,USA,136
+58,57,Ugetsu monogatari,"Mizoguchi, Kenji",1953,Japan,96
+59,58,"Battle of Algiers, The","Pontecorvo, Gillo",1966,Italy,121
+60,63,GoodFellas,"Scorsese, Martin",1990,USA,146
+61,60,"Grande illusion, La","Renoir, Jean",1937,France,117
+62,61,Wild Strawberries,"Bergman, Ingmar",1957,Sweden,90
+63,65,Rio Bravo,"Hawks, Howard",1959,USA,141
+64,62,Fanny and Alexander,"Bergman, Ingmar",1982,Sweden,189
+65,64,Shoah,"Lanzmann, Claude",1985,France,566
+66,66,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb,"Kubrick, Stanley",1964,UK,93
+67,69,Once Upon a Time in the West,"Leone, Sergio",1968,Italy,165
+68,67,Pierrot le fou,"Godard, Jean-Luc",1965,France,110
+69,68,Journey to Italy,"Rossellini, Roberto",1954,Italy,97
+70,70,Chinatown,"Polanski, Roman",1974,USA,131
+71,71,Do the Right Thing,"Lee, Spike",1989,USA,120
+72,72,Metropolis,"Lang, Fritz",1927,Germany,153
+73,74,"Woman Under the Influence, A","Cassavetes, John",1974,USA,155
+74,73,"Strada, La","Fellini, Federico",1954,Italy,115
+75,76,"Leopard, The","Visconti, Luchino",1963,Italy,186
+76,75,"Enfants du paradis, Les","Carné, Marcel",1945,France,195
+77,77,Amarcord,"Fellini, Federico",1973,Italy,127
+78,79,Pulp Fiction,"Tarantino, Quentin",1994,USA,154
+79,80,"Wild Bunch, The","Peckinpah, Sam",1969,USA,135
+80,88,Viridiana,"Buñuel, Luis",1961,Spain,90
+81,78,"Man Escaped, A","Bresson, Robert",1956,France,102
+82,81,It's a Wonderful Life,"Capra, Frank",1946,USA,129
+83,91,"Man Who Shot Liberty Valance, The","Ford, John",1962,USA,119
+84,82,"Seventh Seal, The","Bergman, Ingmar",1957,Sweden,96
+85,84,Sansho the Bailiff,"Mizoguchi, Kenji",1954,Japan,125
+86,86,"Shining, The","Kubrick, Stanley",1980,USA,142
+87,83,"Conformist, The","Bertolucci, Bernardo",1970,Italy,107
+88,89,Pickpocket,"Bresson, Robert",1959,France,75
+89,85,"Magnificent Ambersons, The","Welles, Orson",1942,USA,88
+90,87,Blue Velvet,"Lynch, David",1986,USA,120
+91,92,Jaws,"Spielberg, Steven",1975,USA,124
+92,90,Nashville,"Altman, Robert",1975,USA,160
+93,93,"Gold Rush, The","Chaplin, Charles",1925,USA,82
+94,94,Gertrud,"Dreyer, Carl Theodor",1964,Denmark,116
+95,95,"Jetée, La","Marker, Chris",1962,France,27
+96,96,Sans soleil,"Marker, Chris",1983,France,100
+97,97,Cléo from 5 to 7,"Varda, Agnès",1962,France,90
+98,102,To Be or Not to Be,"Lubitsch, Ernst",1942,USA,99
+99,98,Jules et Jim,"Truffaut, François",1962,France,104
+100,99,Meshes of the Afternoon,"Deren, Maya & Alexander Hammid",1943,USA,15
