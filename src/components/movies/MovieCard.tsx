@@ -1,7 +1,5 @@
 import { Card, CardActionArea, CardContent, CardMedia, Stack, Typography } from '@mui/material'
-import StarIcon from '@mui/icons-material/Star'
-import StarHalfIcon from '@mui/icons-material/StarHalf'
-import StarBorderIcon from '@mui/icons-material/StarBorder'
+import HowToRegRoundedIcon from '@mui/icons-material/HowToRegRounded'
 import { posterUrl } from '../../services/tmdb'
 
 export interface MovieCardProps {
@@ -13,16 +11,6 @@ export interface MovieCardProps {
 
 export function MovieCard({ title, posterPath, year, myRating }: MovieCardProps) {
   const poster = posterUrl(posterPath)
-  function renderStars(r?: number) {
-    if (!r) return null
-    const stars = [] as JSX.Element[]
-    for (let i = 1; i <= 5; i++) {
-      if (r >= i) stars.push(<StarIcon key={i} fontSize="small" />)
-      else if (r >= i - 0.5) stars.push(<StarHalfIcon key={i} fontSize="small" />)
-      else stars.push(<StarBorderIcon key={i} fontSize="small" />)
-    }
-    return <Stack direction="row" spacing={0.5}>{stars}</Stack>
-  }
 
   return (
     <Card>
@@ -32,7 +20,12 @@ export function MovieCard({ title, posterPath, year, myRating }: MovieCardProps)
           <Typography variant="subtitle1" noWrap>{title}</Typography>
           <Stack direction="row" spacing={1} alignItems="center">
             {year && <Typography variant="body2" color="text.secondary">{year}</Typography>}
-            {renderStars(myRating)}
+            {typeof myRating === 'number' && (
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <HowToRegRoundedIcon sx={{ color: '#FB8C00' }} fontSize="small" />
+                <Typography variant="body2" sx={{ color: '#FB8C00', fontWeight: 800 }}>{Number(myRating).toFixed(1)}</Typography>
+              </Stack>
+            )}
           </Stack>
         </CardContent>
       </CardActionArea>

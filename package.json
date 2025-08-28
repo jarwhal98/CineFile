@@ -17,6 +17,7 @@
     "@mui/icons-material": "^6.1.1",
     "@mui/material": "^6.1.1",
     "@mui/x-data-grid": "^7.13.1",
+  "@supabase/supabase-js": "^2.45.3",
     "axios": "^1.7.2",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
@@ -45,6 +46,7 @@
     "prettier": "^3.3.3",
     "typescript": "^5.5.4",
     "vite": "^5.4.1",
+    "vite-plugin-pwa": "^1.0.3",
     "vitest": "^2.0.5"
   }
 }

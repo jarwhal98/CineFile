@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Box, Button, Card, CardActionArea, CardContent, CardMedia, Chip, Divider, IconButton, Menu, MenuItem, Stack, Typography } from '@mui/material'
+import { Box, Button, Card, CardActionArea, CardContent, CardMedia, Chip, Divider, IconButton, Menu, MenuItem, Stack, Typography, Dialog, DialogTitle, DialogContent, TextField } from '@mui/material'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import HowToRegRoundedIcon from '@mui/icons-material/HowToRegRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import StarIcon from '@mui/icons-material/Star'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { useNavigate, useParams } from 'react-router-dom'
 import RatingDialog from '../features/movies/RatingDialog'
 import { db } from '../store/db'
-import { posterUrl, fetchMovie, getTmdbKey } from '../services/tmdb'
+import { posterUrl, fetchMovie, getTmdbKey, searchMovies } from '../services/tmdb'
 import { useAggregatedMovies } from '../features/movies/useAggregatedMovies'
+// Star bar removed in favor of numeric user rating next to user-check icon
 
 export default function ListDetail() {
   const { id } = useParams<{ id: string }>()
@@ -21,6 +23,12 @@ export default function ListDetail() {
   const [sort, setSort] = useState<{ key: 'rank' | 'title' | 'year' | 'director'; dir: 'asc' | 'desc' }>({ key: 'rank', dir: 'asc' })
   // Removed poster background overlays; keep UI clean and glassy
   const [rate, setRate] = useState<{ id: number; rating?: number; date?: string } | null>(null)
+  const [replace, setReplace] = useState<{ movieId: number; title: string } | null>(null)
+  const [repQuery, setRepQuery] = useState('')
+  const [repBusy, setRepBusy] = useState(false)
+  const [repErr, setRepErr] = useState<string | null>(null)
+  const [repResults, setRepResults] = useState<Array<{ id: number; title: string; year?: number; posterPath?: string }>>([])
+  const [itemMenu, setItemMenu] = useState<{ anchorEl: HTMLElement; movieId: number; title: string } | null>(null)
 
   const list = useLiveQuery(() => (id ? db.lists.get(id) : undefined), [id])
   const items = useLiveQuery(() => (id ? db.listItems.where('listId').equals(id).toArray() : []), [id]) || []
@@ -48,8 +56,8 @@ export default function ListDetail() {
   const count = isAll ? aggregatedRows.length : list?.count || withMovies.length
   const pct = count > 0 ? Math.round((watched / count) * 100) : 0
 
-  // Progress card defines the pinned header height; ~30% smaller than before
-  const squareSize = useMemo(() => 90, [])
+  // Progress card defines the pinned header height; add a bit more room for chips
+  const squareSize = useMemo(() => 100, [])
 
   const titleText = isAll ? 'All Lists' : list?.name || id
   const handleOpenMenu = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget)
@@ -76,7 +84,7 @@ export default function ListDetail() {
 
   return (
     <Stack spacing={2} sx={{ pb: 10 }}>
-  <Stack direction="row" spacing={1} sx={{ position: 'sticky', top: 8, zIndex: 2, background: 'rgba(250,250,248,0.85)', backdropFilter: 'blur(8px)', borderRadius: 2, px: 1, pt: 1, pb: 0.5, alignItems: 'stretch' }}>
+  <Stack direction="row" spacing={1} sx={{ position: 'sticky', top: 8, zIndex: 2, background: 'rgba(250,250,248,0.85)', backdropFilter: 'blur(8px)', borderRadius: 2, px: 1, pt: 1, pb: 1.25, alignItems: 'stretch' }}>
         {/* Left: title at top, chips at bottom, space defined by progress card height */}
         <Stack spacing={0} sx={{ flex: 1, minWidth: 0, height: squareSize, display: 'flex', justifyContent: 'space-between' }}>
           <Box>
@@ -159,9 +167,24 @@ export default function ListDetail() {
                           <VisibilityRoundedIcon fontSize="small" />
                         </IconButton>
                         {typeof movie?.tmdbRating === 'number' && (<Box title="Public rating" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><StarRoundedIcon sx={{ color: '#FFC107' }} fontSize="small" /><Typography variant="body2" sx={{ color: '#222', fontWeight: 600 }}>{Number(movie.tmdbRating).toFixed(1)}</Typography></Box>)}
-                        {typeof movie?.myRating === 'number' && (<Box title="Your rating" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}><HowToRegRoundedIcon sx={{ color: '#FB8C00' }} fontSize="small" /><Typography variant="body2" sx={{ color: '#222', fontWeight: 700 }}>{Number(movie.myRating).toFixed(1)}</Typography></Box>)}
+                        {typeof movie?.myRating === 'number' && (
+                          <Box title="Your rating" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <HowToRegRoundedIcon sx={{ color: '#FB8C00' }} fontSize="small" />
+                            <Typography variant="body2" sx={{ color: '#FB8C00', fontWeight: 800 }}>{Number(movie.myRating).toFixed(1)}</Typography>
+                          </Box>
+                        )}
                         <Box sx={{ flex: 1 }} />
                         <Button size="small" startIcon={<StarIcon />} onClick={(e) => { e.stopPropagation(); setRate({ id: movie.id, rating: movie.myRating, date: movie.watchedAt }) }}>Rate</Button>
+                        {!isAll && list?.visibility === 'public' && (
+                          <IconButton
+                            size="small"
+                            sx={{ ml: 0.5, color: 'rgba(0,0,0,0.5)' }}
+                            aria-label="More actions"
+                            onClick={(e) => { e.stopPropagation(); setItemMenu({ anchorEl: e.currentTarget, movieId: movie.id, title: movie.title || '' }) }}
+                          >
+                            <MoreVertIcon fontSize="small" />
+                          </IconButton>
+                        )}
                       </Stack>
                     </CardContent>
                   </Stack>
@@ -173,6 +196,81 @@ export default function ListDetail() {
       </Stack>
 
       <RatingDialog open={!!rate} initialRating={rate?.rating} initialDate={rate?.date} onClose={() => setRate(null)} onSave={async (rating, date) => { if (!rate) return; await db.movies.update(rate.id, { seen: true, myRating: rating, watchedAt: date }); setRate(null) }} />
+
+      {/* Per-item actions menu (unobtrusive) */}
+      <Menu
+        anchorEl={itemMenu?.anchorEl || null}
+        open={Boolean(itemMenu)}
+        onClose={() => setItemMenu(null)}
+        PaperProps={{ sx: { background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)' } }}
+      >
+        {!isAll && list?.visibility === 'public' && (
+          <MenuItem onClick={() => {
+            if (!itemMenu) return
+            setReplace({ movieId: itemMenu.movieId, title: itemMenu.title })
+            setRepQuery(itemMenu.title)
+            setRepResults([])
+            setRepErr(null)
+            setItemMenu(null)
+          }}>Replace…</MenuItem>
+        )}
+      </Menu>
+
+      {/* Replace Movie dialog for correcting public list matches */}
+      <Dialog open={!!replace} onClose={() => !repBusy && setReplace(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>Replace movie in this list</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="Search TMDB"
+              placeholder="Type a movie title"
+              value={repQuery}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRepQuery(e.target.value)}
+              fullWidth
+            />
+            <Button onClick={async () => {
+              setRepBusy(true); setRepErr(null)
+              try {
+                const res = await searchMovies(repQuery)
+                setRepResults(res)
+              } catch (e) {
+                setRepErr('Search failed. Check your TMDB key in Settings.')
+              } finally { setRepBusy(false) }
+            }} disabled={repBusy || !repQuery.trim()} variant="outlined">Search</Button>
+            {repErr && <Typography color="error" variant="body2">{repErr}</Typography>}
+            <Stack spacing={1}>
+              {repResults.map((r) => (
+                <Card key={r.id}>
+                  <CardActionArea onClick={async () => {
+                    if (!replace || !id) return
+                    setRepBusy(true); setRepErr(null)
+                    try {
+                      const li = await db.listItems.where('listId').equals(id).and((li) => li.movieId === replace.movieId).first()
+                      if (!li) { setRepErr('Original list item not found.'); setRepBusy(false); return }
+                      const dup = await db.listItems.where('listId').equals(id).and((li) => li.movieId === r.id).first()
+                      if (dup) { setRepErr('That movie is already in this list. Remove the duplicate first.'); setRepBusy(false); return }
+                      await db.listItems.update(li.id, { movieId: r.id })
+                      const has = await db.movies.get(r.id)
+                      if (!has) {
+                        try { const data = await fetchMovie(r.id); await db.movies.put(data) } catch {}
+                      }
+                      setReplace(null)
+                    } finally { setRepBusy(false) }
+                  }}>
+                    <CardContent>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        {r.posterPath && <img src={posterUrl(r.posterPath)} alt="poster" style={{ height: 60, borderRadius: 6 }} />}
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>{r.title}</Typography>
+                        {r.year && <Typography variant="body2" color="text.secondary">({r.year})</Typography>}
+                      </Stack>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              ))}
+            </Stack>
+          </Stack>
+        </DialogContent>
+      </Dialog>
     </Stack>
   )
 }

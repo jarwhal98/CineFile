@@ -10,7 +10,7 @@ export interface Movie {
   cast?: string[]
   tmdbRating?: number
   seen?: boolean
-  myRating?: number // 0.5 increments up to 5
+  myRating?: number // 0.5 increments up to 10
   watchedAt?: string // ISO date
   runtime?: number
   genres?: string[]

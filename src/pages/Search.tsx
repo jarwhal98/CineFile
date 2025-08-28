@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Box, Card, CardActionArea, CardContent, IconButton, InputAdornment, Stack, TextField, Typography } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import ClearIcon from '@mui/icons-material/Clear'
-import { searchMovieId, fetchMovie, posterUrl } from '../services/tmdb'
+import { searchMovieId, fetchMovie, posterUrl, searchMovies } from '../services/tmdb'
 import { db } from '../store/db'
 import { useNavigate } from 'react-router-dom'
 
@@ -21,17 +21,27 @@ export default function SearchPage() {
       const all = await db.movies.toArray()
       const needle = query.toLowerCase()
       const local = all.filter(m => m.title.toLowerCase().includes(needle) || (m.directors||[]).join(',').toLowerCase().includes(needle) || (m.cast||[]).join(',').toLowerCase().includes(needle))
-      let out = local
-      // If none found locally, try TMDB search for an id, then fetch and cache
-      if (out.length === 0) {
-        const id = await searchMovieId(query)
-        if (id) {
-          const data = await fetchMovie(id)
-          await db.movies.put(data)
-          out = [data]
-        }
+      // TMDB search to expand results
+      const tmdb = await searchMovies(query)
+      // Merge and dedupe by id
+      const map = new Map<number, any>()
+      for (const m of local) map.set(m.id, m)
+      for (const r of tmdb) {
+        if (!map.has(r.id)) map.set(r.id, r)
       }
-      setResults(out)
+      const out = Array.from(map.values())
+      // Ensure we have DB entries for TMDB-only hits to allow navigation
+      const toFetch = out.filter((m: any) => !('overview' in m || 'genres' in m)).slice(0, 5)
+      for (const m of toFetch) {
+        try {
+          const full = await fetchMovie(m.id)
+          await db.movies.put(full)
+          // Replace shallow with full in results map
+          map.set(full.id, full)
+        } catch {}
+      }
+      const finalOut = Array.from(map.values())
+      setResults(finalOut)
     } finally {
       setBusy(false)
     }

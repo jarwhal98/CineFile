@@ -1,12 +1,13 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Box, Button, Chip, Divider, IconButton, Stack, Typography } from '@mui/material'
+import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Typography, Autocomplete } from '@mui/material'
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded'
 import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import HowToRegRoundedIcon from '@mui/icons-material/HowToRegRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import { db } from '../store/db'
+// Star bar removed in favor of numeric display next to user-check icon
 import { posterUrl } from '../services/tmdb'
 import RatingDialog from '../features/movies/RatingDialog'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -26,6 +27,18 @@ export default function MoviePage() {
     return items.map((it) => ({ listId: it.listId, rank: it.rank, name: allLists.find((l) => l.id === it.listId)?.name || it.listId, source: allLists.find((l) => l.id === it.listId)?.source }))
   }, [movieId])
   const [rate, setRate] = useState<{ rating?: number; date?: string } | null>(null)
+  const [addOpen, setAddOpen] = useState(false)
+  const [addBusy, setAddBusy] = useState(false)
+  const [selectedListId, setSelectedListId] = useState<string | null>(null)
+  const [rankInput, setRankInput] = useState<string>('')
+  const userLists = useLiveQuery(async () => {
+    const all = await db.lists.toArray()
+    return all.filter(l => l.visibility === 'private' && l.id !== 'your-top')
+  }, []) || []
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createBusy, setCreateBusy] = useState(false)
+  const [createTitle, setCreateTitle] = useState('')
+  function slugify(s: string) { return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') }
 
   const currentRank = useMemo(() => {
     const fromListId: string | null | undefined = loc?.state?.fromListId
@@ -37,21 +50,38 @@ export default function MoviePage() {
       .sort((a, b) => (a.rank || 9999) - (b.rank || 9999))[0]?.rank
   }, [lists, loc])
 
-  // Backfill details if missing (overview/backdrop)
+  // Ensure details exist: if the movie isn't in DB (from search), fetch and put; if partial, update.
+  const [loadError, setLoadError] = useState<string | null>(null)
   useEffect(() => {
-    (async () => {
-    if (!movie || (!movie.overview && !movie.backdropPath)) {
-        try {
-          const fresh = await fetchMovie(movieId!)
-          await db.movies.update(movieId!, {
-            overview: fresh.overview ?? movie?.overview,
-            backdropPath: fresh.backdropPath ?? movie?.backdropPath,
-            runtime: fresh.runtime ?? movie?.runtime,
-            genres: fresh.genres ?? movie?.genres
-          })
-        } catch { /* no-op */ }
+    let cancelled = false
+    ;(async () => {
+      if (!movieId) return
+      try {
+        if (!movie) {
+          const fresh = await fetchMovie(movieId)
+          if (!cancelled) {
+            await db.movies.put(fresh)
+            setLoadError(null)
+          }
+          return
+        }
+        if (!movie.overview || !movie.backdropPath || !movie.runtime || !(movie.genres && movie.genres.length)) {
+          const fresh = await fetchMovie(movieId)
+          if (!cancelled) {
+            await db.movies.update(movieId, {
+              overview: fresh.overview ?? movie.overview,
+              backdropPath: fresh.backdropPath ?? movie.backdropPath,
+              runtime: fresh.runtime ?? movie.runtime,
+              genres: fresh.genres ?? movie.genres
+            })
+            setLoadError(null)
+          }
+        }
+      } catch (e) {
+        if (!cancelled) setLoadError('Unable to load details from TMDB. Add your API key in Settings and try again.')
       }
     })()
+    return () => { cancelled = true }
   }, [movieId, movie])
   // Measurement refs to keep poster height aligned to right content
   const titleRef = useRef<HTMLDivElement | null>(null)
@@ -77,7 +107,22 @@ export default function MoviePage() {
     }
   }, [])
 
-  if (!movie) return <Box sx={{ p: 3 }}><Typography>Loading…</Typography></Box>
+  if (!movie) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography sx={{ mb: 1 }}>Loading…</Typography>
+        {loadError && (
+          <>
+            <Typography color="error" sx={{ mb: 1 }}>{loadError}</Typography>
+            <Stack direction="row" spacing={1}>
+              <Button variant="outlined" onClick={() => window.location.reload()}>Retry</Button>
+              <Button variant="contained" onClick={() => (window.location.href = '/settings')}>Open Settings</Button>
+            </Stack>
+          </>
+        )}
+      </Box>
+    )
+  }
 
   const poster = posterUrl(movie.posterPath)
   const backdrop = posterUrl(movie.backdropPath) || poster
@@ -127,6 +172,22 @@ export default function MoviePage() {
           >
             Rate
           </Button>
+          <Button
+            onClick={() => setAddOpen(true)}
+            sx={{
+              textTransform: 'none',
+              borderRadius: 999,
+              px: 1.5,
+              py: 0.5,
+              ml: 1,
+              background: 'rgba(255,255,255,0.75)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(0,0,0,0.06)',
+              boxShadow: '0 10px 24px rgba(0,0,0,0.12)'
+            }}
+          >
+            Add to List
+          </Button>
         </Box>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} sx={{ position: 'relative', zIndex: 1, p: 2.5, alignItems: 'stretch' }}>
           {/* Poster sized to match right content from title top to ratings row bottom */}
@@ -160,7 +221,7 @@ export default function MoviePage() {
               {typeof movie.myRating === 'number' && (
                 <Box title="Your rating" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <HowToRegRoundedIcon sx={{ color: '#FB8C00' }} fontSize="small" />
-                  <Typography variant="body2" sx={{ color: '#222', fontWeight: 700 }}>{Number(movie.myRating).toFixed(1)}</Typography>
+                  <Typography variant="body2" sx={{ color: '#FB8C00', fontWeight: 800 }}>{Number(movie.myRating).toFixed(1)}</Typography>
                 </Box>
               )}
               {movie.seen && (
@@ -217,6 +278,105 @@ export default function MoviePage() {
           setRate(null)
         }}
       />
+
+      {/* Add to List dialog */}
+      <Dialog open={addOpen} onClose={() => !addBusy && setAddOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Add to list</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <Autocomplete
+              options={userLists}
+              getOptionLabel={(o) => o.name}
+              value={userLists.find(l => l.id === selectedListId) || null}
+              onChange={(_, v) => setSelectedListId(v ? v.id : null)}
+              renderInput={(params) => <TextField {...params} label="List" placeholder="Choose a list" required />}
+            />
+            <Typography variant="caption" color="text.secondary">Only private lists can be used.</Typography>
+            <Box>
+              <Button size="small" onClick={() => setCreateOpen(true)}>New private list</Button>
+            </Box>
+            <TextField
+              label="Rank (optional)"
+              placeholder="Leave blank to append to end"
+              value={rankInput}
+              onChange={(e) => setRankInput(e.target.value)}
+              inputMode="numeric"
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddOpen(false)} disabled={addBusy}>Cancel</Button>
+          <Button variant="contained" disabled={addBusy || !selectedListId} onClick={async () => {
+            if (!movie || !selectedListId) return
+            setAddBusy(true)
+            try {
+              const listDef = await db.lists.get(selectedListId)
+              if (!listDef || listDef.visibility !== 'private') {
+                // silently ignore if list isn't private (shouldn't happen due to filter)
+                setAddOpen(false)
+                return
+              }
+              const now = new Date().toISOString()
+              // Prevent duplicates
+              const already = await db.listItems.where('listId').equals(selectedListId).and(li => li.movieId === movie.id).first()
+              if (already) { setAddOpen(false); setAddBusy(false); return }
+              // Determine rank
+              let rank: number | undefined = undefined
+              const provided = Number(rankInput)
+              if (Number.isFinite(provided) && provided > 0) rank = Math.floor(provided)
+              if (rank === undefined) {
+                const items = await db.listItems.where('listId').equals(selectedListId).toArray()
+                const maxRank = items.reduce((m, it) => Math.max(m, typeof it.rank === 'number' ? it.rank : 0), 0)
+                rank = maxRank + 1
+              }
+              // Write
+              await db.transaction('rw', db.lists, db.listItems, async () => {
+                const idKey = `${selectedListId}:${rank}:${movie.id}`
+                await db.listItems.put({ id: idKey, listId: selectedListId, movieId: movie.id, rank, addedAt: now })
+                const total = await db.listItems.where('listId').equals(selectedListId).count()
+                await db.lists.update(selectedListId, { itemCount: total, count: total, updatedAt: now })
+              })
+              setAddOpen(false)
+            } finally {
+              setAddBusy(false)
+            }
+          }}>Add</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create new private list dialog */}
+      <Dialog open={createOpen} onClose={() => !createBusy && setCreateOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Create private list</DialogTitle>
+        <DialogContent>
+          <TextField autoFocus fullWidth label="Title" value={createTitle} onChange={(e) => setCreateTitle(e.target.value)} sx={{ mt: 1 }} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateOpen(false)} disabled={createBusy}>Cancel</Button>
+          <Button variant="contained" disabled={createBusy || !createTitle.trim()} onClick={async () => {
+            const name = createTitle.trim()
+            if (!name) return
+            setCreateBusy(true)
+            try {
+              const id = slugify(name)
+              const now = new Date().toISOString()
+              const existing = await db.lists.get(id)
+              if (existing) {
+                // simple suffix to ensure uniqueness
+                const id2 = `${id}-${Math.random().toString(36).slice(2,6)}`
+                await db.lists.put({ id: id2, name, source: 'User', slug: 'User', itemCount: 0, count: 0, createdAt: now, updatedAt: now, createdBy: 'user', visibility: 'private' })
+                setSelectedListId(id2)
+              } else {
+                await db.lists.put({ id, name, source: 'User', slug: 'User', itemCount: 0, count: 0, createdAt: now, updatedAt: now, createdBy: 'user', visibility: 'private' })
+                setSelectedListId(id)
+              }
+              setCreateOpen(false)
+              setCreateTitle('')
+            } finally {
+              setCreateBusy(false)
+            }
+          }}>Create</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
+import { PasscodeGate } from './components/PasscodeGate'
 import ListsManage from './pages/Lists'
 import Settings from './pages/Settings'
 import React, { Suspense, useEffect } from 'react'
@@ -18,20 +19,22 @@ export default function App() {
     })
   }, [])
   return (
-    <AppLayout>
-      <Suspense fallback={null}>
-        <Routes>
-          <Route path="/" element={<RootRedirect />} />
-          <Route path="/lists" element={<ListDetail />} />
-          <Route path="/lists/manage" element={<ListsManage />} />
-          <Route path="/lists/add" element={<AddList />} />
-          <Route path="/lists/:id" element={<ListDetail />} />
-          <Route path="/movie/:id" element={<MoviePage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </Suspense>
-    </AppLayout>
+    <PasscodeGate>
+      <AppLayout>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path="/" element={<RootRedirect />} />
+            <Route path="/lists" element={<ListDetail />} />
+            <Route path="/lists/manage" element={<ListsManage />} />
+            <Route path="/lists/add" element={<AddList />} />
+            <Route path="/lists/:id" element={<ListDetail />} />
+            <Route path="/movie/:id" element={<MoviePage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </Suspense>
+      </AppLayout>
+    </PasscodeGate>
   )
 }
 

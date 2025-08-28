@@ -1,0 +1,344 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.2
+2 info using node@v22.17.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/jonathanwerle/Desktop/Command Center/CineFile/.npmrc
+5 silly config load:file:/Users/jonathanwerle/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm install
+8 verbose argv "install" "--no-audit" "--no-fund"
+9 verbose logfile logs-max:10 dir:/Users/jonathanwerle/Desktop/Command Center/CineFile/.npm-cache/_logs/2025-08-25T18_59_03_726Z-
+10 verbose logfile /Users/jonathanwerle/Desktop/Command Center/CineFile/.npm-cache/_logs/2025-08-25T18_59_03_726Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+13 silly logfile done cleaning log files
+14 silly idealTree buildDeps
+15 silly fetch manifest @supabase/supabase-js@^2.45.3
+16 silly packumentCache full:https://registry.npmjs.org/@supabase%2fsupabase-js cache-miss
+17 http fetch GET 200 https://registry.npmjs.org/@supabase%2fsupabase-js 214ms (cache miss)
+18 silly packumentCache full:https://registry.npmjs.org/@supabase%2fsupabase-js set size:undefined disposed:false
+19 silly placeDep ROOT @supabase/supabase-js@2.56.0 OK for: cinefile@0.1.0 want: ^2.45.3
+20 silly fetch manifest @supabase/auth-js@2.71.1
+21 silly packumentCache full:https://registry.npmjs.org/@supabase%2fauth-js cache-miss
+22 silly fetch manifest @supabase/functions-js@2.4.5
+23 silly packumentCache full:https://registry.npmjs.org/@supabase%2ffunctions-js cache-miss
+24 silly fetch manifest @supabase/node-fetch@2.6.15
+25 silly packumentCache full:https://registry.npmjs.org/@supabase%2fnode-fetch cache-miss
+26 silly fetch manifest @supabase/postgrest-js@1.21.3
+27 silly packumentCache full:https://registry.npmjs.org/@supabase%2fpostgrest-js cache-miss
+28 silly fetch manifest @supabase/realtime-js@2.15.1
+29 silly packumentCache full:https://registry.npmjs.org/@supabase%2frealtime-js cache-miss
+30 silly fetch manifest @supabase/storage-js@^2.10.4
+31 silly packumentCache full:https://registry.npmjs.org/@supabase%2fstorage-js cache-miss
+32 http fetch GET 200 https://registry.npmjs.org/@supabase%2fauth-js 67ms (cache miss)
+33 silly packumentCache full:https://registry.npmjs.org/@supabase%2fauth-js set size:undefined disposed:false
+34 http fetch GET 200 https://registry.npmjs.org/@supabase%2fnode-fetch 85ms (cache miss)
+35 silly packumentCache full:https://registry.npmjs.org/@supabase%2fnode-fetch set size:undefined disposed:false
+36 http fetch GET 200 https://registry.npmjs.org/@supabase%2fstorage-js 92ms (cache miss)
+37 silly packumentCache full:https://registry.npmjs.org/@supabase%2fstorage-js set size:undefined disposed:false
+38 http fetch GET 200 https://registry.npmjs.org/@supabase%2frealtime-js 116ms (cache miss)
+39 silly packumentCache full:https://registry.npmjs.org/@supabase%2frealtime-js set size:undefined disposed:false
+40 http fetch GET 200 https://registry.npmjs.org/@supabase%2ffunctions-js 127ms (cache miss)
+41 silly packumentCache full:https://registry.npmjs.org/@supabase%2ffunctions-js set size:undefined disposed:false
+42 http fetch GET 200 https://registry.npmjs.org/@supabase%2fpostgrest-js 128ms (cache miss)
+43 silly packumentCache full:https://registry.npmjs.org/@supabase%2fpostgrest-js set size:undefined disposed:false
+44 silly placeDep ROOT @supabase/auth-js@2.71.1 OK for: @supabase/supabase-js@2.56.0 want: 2.71.1
+45 silly placeDep ROOT @supabase/functions-js@2.4.5 OK for: @supabase/supabase-js@2.56.0 want: 2.4.5
+46 silly placeDep ROOT @supabase/node-fetch@2.6.15 OK for: @supabase/supabase-js@2.56.0 want: 2.6.15
+47 silly placeDep ROOT @supabase/postgrest-js@1.21.3 OK for: @supabase/supabase-js@2.56.0 want: 1.21.3
+48 silly placeDep ROOT @supabase/realtime-js@2.15.1 OK for: @supabase/supabase-js@2.56.0 want: 2.15.1
+49 silly placeDep ROOT @supabase/storage-js@2.11.0 OK for: @supabase/supabase-js@2.56.0 want: ^2.10.4
+50 silly fetch manifest @supabase/node-fetch@^2.6.14
+51 silly packumentCache full:https://registry.npmjs.org/@supabase%2fnode-fetch cache-miss
+52 silly fetch manifest @supabase/node-fetch@^2.6.14
+53 silly packumentCache full:https://registry.npmjs.org/@supabase%2fnode-fetch cache-miss
+54 silly fetch manifest whatwg-url@^5.0.0
+55 silly packumentCache full:https://registry.npmjs.org/whatwg-url cache-miss
+56 silly fetch manifest @types/ws@^8.18.1
+57 silly packumentCache full:https://registry.npmjs.org/@types%2fws cache-miss
+58 silly fetch manifest @types/phoenix@^1.6.6
+59 silly packumentCache full:https://registry.npmjs.org/@types%2fphoenix cache-miss
+60 http cache https://registry.npmjs.org/@supabase%2fnode-fetch 5ms (cache hit)
+61 silly packumentCache full:https://registry.npmjs.org/@supabase%2fnode-fetch set size:53917 disposed:false
+62 http cache https://registry.npmjs.org/@supabase%2fnode-fetch 6ms (cache hit)
+63 silly packumentCache full:https://registry.npmjs.org/@supabase%2fnode-fetch set size:53917 disposed:false
+64 silly packumentCache full:https://registry.npmjs.org/@supabase%2fnode-fetch dispose
+65 http fetch GET 200 https://registry.npmjs.org/whatwg-url 38ms (cache revalidated)
+66 silly packumentCache full:https://registry.npmjs.org/whatwg-url set size:160604 disposed:false
+67 http fetch GET 200 https://registry.npmjs.org/@types%2fphoenix 55ms (cache miss)
+68 silly packumentCache full:https://registry.npmjs.org/@types%2fphoenix set size:undefined disposed:false
+69 http fetch GET 200 https://registry.npmjs.org/@types%2fws 83ms (cache miss)
+70 silly packumentCache full:https://registry.npmjs.org/@types%2fws set size:undefined disposed:false
+71 silly placeDep node_modules/@supabase/node-fetch whatwg-url@5.0.0 OK for: @supabase/node-fetch@2.6.15 want: ^5.0.0
+72 silly fetch manifest tr46@~0.0.3
+73 silly packumentCache full:https://registry.npmjs.org/tr46 cache-miss
+74 silly fetch manifest webidl-conversions@^3.0.0
+75 silly packumentCache full:https://registry.npmjs.org/webidl-conversions cache-miss
+76 http fetch GET 200 https://registry.npmjs.org/tr46 37ms (cache revalidated)
+77 silly packumentCache full:https://registry.npmjs.org/tr46 set size:45265 disposed:false
+78 http fetch GET 200 https://registry.npmjs.org/webidl-conversions 38ms (cache revalidated)
+79 silly packumentCache full:https://registry.npmjs.org/webidl-conversions set size:41857 disposed:false
+80 silly placeDep ROOT @types/phoenix@1.6.6 OK for: @supabase/realtime-js@2.15.1 want: ^1.6.6
+81 silly placeDep ROOT @types/ws@8.18.1 OK for: @supabase/realtime-js@2.15.1 want: ^8.18.1
+82 silly placeDep node_modules/@supabase/node-fetch tr46@0.0.3 OK for: whatwg-url@5.0.0 want: ~0.0.3
+83 silly placeDep node_modules/@supabase/node-fetch webidl-conversions@3.0.1 OK for: whatwg-url@5.0.0 want: ^3.0.0
+84 silly reify moves {}
+85 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-win32-x64-msvc
+86 silly reify mark deleted [
+86 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-win32-x64-msvc'
+86 silly reify ]
+87 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-win32-ia32-msvc
+88 silly reify mark deleted [
+88 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-win32-ia32-msvc'
+88 silly reify ]
+89 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-win32-arm64-msvc
+90 silly reify mark deleted [
+90 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-win32-arm64-msvc'
+90 silly reify ]
+91 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-x64-musl
+92 silly reify mark deleted [
+92 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-x64-musl'
+92 silly reify ]
+93 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-x64-gnu
+94 silly reify mark deleted [
+94 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-x64-gnu'
+94 silly reify ]
+95 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-s390x-gnu
+96 silly reify mark deleted [
+96 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-s390x-gnu'
+96 silly reify ]
+97 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-riscv64-musl
+98 silly reify mark deleted [
+98 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-riscv64-musl'
+98 silly reify ]
+99 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-riscv64-gnu
+100 silly reify mark deleted [
+100 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-riscv64-gnu'
+100 silly reify ]
+101 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-ppc64-gnu
+102 silly reify mark deleted [
+102 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-ppc64-gnu'
+102 silly reify ]
+103 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-loongarch64-gnu
+104 silly reify mark deleted [
+104 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-loongarch64-gnu'
+104 silly reify ]
+105 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-arm64-musl
+106 silly reify mark deleted [
+106 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-arm64-musl'
+106 silly reify ]
+107 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-arm64-gnu
+108 silly reify mark deleted [
+108 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-arm64-gnu'
+108 silly reify ]
+109 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-arm-musleabihf
+110 silly reify mark deleted [
+110 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-arm-musleabihf'
+110 silly reify ]
+111 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-arm-gnueabihf
+112 silly reify mark deleted [
+112 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-linux-arm-gnueabihf'
+112 silly reify ]
+113 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-freebsd-x64
+114 silly reify mark deleted [
+114 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-freebsd-x64'
+114 silly reify ]
+115 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-freebsd-arm64
+116 silly reify mark deleted [
+116 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-freebsd-arm64'
+116 silly reify ]
+117 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-darwin-x64
+118 silly reify mark deleted [
+118 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-darwin-x64'
+118 silly reify ]
+119 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-android-arm64
+120 silly reify mark deleted [
+120 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-android-arm64'
+120 silly reify ]
+121 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-android-arm-eabi
+122 silly reify mark deleted [
+122 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@rollup/rollup-android-arm-eabi'
+122 silly reify ]
+123 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/win32-x64
+124 silly reify mark deleted [
+124 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/win32-x64'
+124 silly reify ]
+125 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/win32-ia32
+126 silly reify mark deleted [
+126 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/win32-ia32'
+126 silly reify ]
+127 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/win32-arm64
+128 silly reify mark deleted [
+128 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/win32-arm64'
+128 silly reify ]
+129 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/sunos-x64
+130 silly reify mark deleted [
+130 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/sunos-x64'
+130 silly reify ]
+131 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/openbsd-x64
+132 silly reify mark deleted [
+132 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/openbsd-x64'
+132 silly reify ]
+133 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/netbsd-x64
+134 silly reify mark deleted [
+134 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/netbsd-x64'
+134 silly reify ]
+135 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-x64
+136 silly reify mark deleted [
+136 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-x64'
+136 silly reify ]
+137 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-s390x
+138 silly reify mark deleted [
+138 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-s390x'
+138 silly reify ]
+139 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-riscv64
+140 silly reify mark deleted [
+140 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-riscv64'
+140 silly reify ]
+141 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-ppc64
+142 silly reify mark deleted [
+142 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-ppc64'
+142 silly reify ]
+143 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-mips64el
+144 silly reify mark deleted [
+144 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-mips64el'
+144 silly reify ]
+145 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-loong64
+146 silly reify mark deleted [
+146 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-loong64'
+146 silly reify ]
+147 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-ia32
+148 silly reify mark deleted [
+148 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-ia32'
+148 silly reify ]
+149 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-arm64
+150 silly reify mark deleted [
+150 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-arm64'
+150 silly reify ]
+151 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-arm
+152 silly reify mark deleted [
+152 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/linux-arm'
+152 silly reify ]
+153 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/freebsd-x64
+154 silly reify mark deleted [
+154 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/freebsd-x64'
+154 silly reify ]
+155 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/freebsd-arm64
+156 silly reify mark deleted [
+156 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/freebsd-arm64'
+156 silly reify ]
+157 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/darwin-x64
+158 silly reify mark deleted [
+158 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/darwin-x64'
+158 silly reify ]
+159 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/android-x64
+160 silly reify mark deleted [
+160 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/android-x64'
+160 silly reify ]
+161 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/android-arm64
+162 silly reify mark deleted [
+162 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/android-arm64'
+162 silly reify ]
+163 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/android-arm
+164 silly reify mark deleted [
+164 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/android-arm'
+164 silly reify ]
+165 verbose reify failed optional dependency /Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/aix-ppc64
+166 silly reify mark deleted [
+166 silly reify   '/Users/jonathanwerle/Desktop/Command Center/CineFile/node_modules/@esbuild/aix-ppc64'
+166 silly reify ]
+167 http cache @types/ws@https://registry.npmjs.org/@types/ws/-/ws-8.18.1.tgz 0ms (cache hit)
+168 http cache @types/phoenix@https://registry.npmjs.org/@types/phoenix/-/phoenix-1.6.6.tgz 0ms (cache hit)
+169 http cache @supabase/realtime-js@https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.15.1.tgz 0ms (cache hit)
+170 http cache @supabase/postgrest-js@https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-1.21.3.tgz 0ms (cache hit)
+171 http cache @supabase/storage-js@https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.11.0.tgz 0ms (cache hit)
+172 http cache @supabase/functions-js@https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.4.5.tgz 0ms (cache hit)
+173 http cache @supabase/node-fetch@https://registry.npmjs.org/@supabase/node-fetch/-/node-fetch-2.6.15.tgz 0ms (cache hit)
+174 http cache @supabase/supabase-js@https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.56.0.tgz 0ms (cache hit)
+175 http cache webidl-conversions@https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz 0ms (cache hit)
+176 http cache whatwg-url@https://registry.npmjs.org/whatwg-url/-/whatwg-url-5.0.0.tgz 0ms (cache hit)
+177 http cache @supabase/auth-js@https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.71.1.tgz 0ms (cache hit)
+178 http cache tr46@https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz 0ms (cache hit)
+179 silly tarball no local data for @types/ws@https://registry.npmjs.org/@types/ws/-/ws-8.18.1.tgz. Extracting by manifest.
+180 silly tarball no local data for @types/phoenix@https://registry.npmjs.org/@types/phoenix/-/phoenix-1.6.6.tgz. Extracting by manifest.
+181 silly tarball no local data for @supabase/realtime-js@https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.15.1.tgz. Extracting by manifest.
+182 silly tarball no local data for @supabase/postgrest-js@https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-1.21.3.tgz. Extracting by manifest.
+183 silly tarball no local data for @supabase/storage-js@https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.11.0.tgz. Extracting by manifest.
+184 silly tarball no local data for @supabase/functions-js@https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.4.5.tgz. Extracting by manifest.
+185 silly tarball no local data for @supabase/node-fetch@https://registry.npmjs.org/@supabase/node-fetch/-/node-fetch-2.6.15.tgz. Extracting by manifest.
+186 silly tarball no local data for @supabase/supabase-js@https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.56.0.tgz. Extracting by manifest.
+187 silly tarball no local data for webidl-conversions@https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz. Extracting by manifest.
+188 silly tarball no local data for whatwg-url@https://registry.npmjs.org/whatwg-url/-/whatwg-url-5.0.0.tgz. Extracting by manifest.
+189 silly tarball no local data for @supabase/auth-js@https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.71.1.tgz. Extracting by manifest.
+190 silly tarball no local data for tr46@https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz. Extracting by manifest.
+191 http fetch GET 200 https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz 70ms (cache miss)
+192 http fetch GET 200 https://registry.npmjs.org/@types/phoenix/-/phoenix-1.6.6.tgz 79ms (cache miss)
+193 http fetch GET 200 https://registry.npmjs.org/@types/ws/-/ws-8.18.1.tgz 87ms (cache miss)
+194 http fetch GET 200 https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-1.21.3.tgz 92ms (cache miss)
+195 http fetch GET 200 https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz 93ms (cache miss)
+196 http fetch GET 200 https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.15.1.tgz 95ms (cache miss)
+197 http fetch GET 200 https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.11.0.tgz 103ms (cache miss)
+198 http fetch GET 200 https://registry.npmjs.org/whatwg-url/-/whatwg-url-5.0.0.tgz 107ms (cache miss)
+199 http fetch GET 200 https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.71.1.tgz 112ms (cache miss)
+200 http fetch GET 200 https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.56.0.tgz 137ms (cache miss)
+201 http fetch GET 200 https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.4.5.tgz 141ms (cache miss)
+202 http fetch GET 200 https://registry.npmjs.org/@supabase/node-fetch/-/node-fetch-2.6.15.tgz 194ms (cache miss)
+203 silly ADD node_modules/@types/ws
+204 silly ADD node_modules/@types/phoenix
+205 silly ADD node_modules/@supabase/storage-js
+206 silly ADD node_modules/@supabase/realtime-js
+207 silly ADD node_modules/@supabase/postgrest-js
+208 silly ADD node_modules/@supabase/node-fetch
+209 silly ADD node_modules/@supabase/node-fetch/node_modules/webidl-conversions
+210 silly ADD node_modules/@supabase/node-fetch/node_modules/tr46
+211 silly ADD node_modules/@supabase/node-fetch/node_modules/whatwg-url
+212 silly ADD node_modules/@supabase/functions-js
+213 silly ADD node_modules/@supabase/auth-js
+214 silly ADD node_modules/@supabase/supabase-js
+215 silly ADD
+216 silly ADD
+217 silly ADD
+218 silly ADD
+219 silly ADD
+220 silly ADD
+221 silly ADD
+222 silly ADD
+223 silly ADD
+224 silly ADD
+225 silly ADD
+226 silly ADD
+227 silly ADD
+228 silly ADD
+229 silly ADD
+230 silly ADD
+231 silly ADD
+232 silly ADD
+233 silly ADD
+234 silly ADD
+235 silly ADD
+236 silly ADD
+237 silly ADD
+238 silly ADD
+239 silly ADD
+240 silly ADD
+241 silly ADD
+242 silly ADD
+243 silly ADD
+244 silly ADD
+245 silly ADD
+246 silly ADD
+247 silly ADD
+248 silly ADD
+249 silly ADD
+250 silly ADD
+251 silly ADD
+252 silly ADD
+253 silly ADD
+254 silly ADD
+255 silly ADD
+256 verbose cwd /Users/jonathanwerle/Desktop/Command Center/CineFile
+257 verbose os Darwin 25.0.0
+258 verbose node v22.17.0
+259 verbose npm  v10.9.2
+260 verbose exit 0
+261 info ok

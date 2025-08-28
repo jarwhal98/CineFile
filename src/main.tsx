@@ -28,6 +28,13 @@ seedIfEmpty()
 // Also compute the user's top list once at startup
 recomputeUserTopList().catch(() => {})
 
+// In development, ensure any previously registered service worker is unregistered
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((regs) => {
+    regs.forEach((r) => r.unregister())
+  }).catch(() => {})
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>

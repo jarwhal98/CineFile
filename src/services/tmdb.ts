@@ -48,10 +48,45 @@ export async function searchMovieId(title: string, year?: number): Promise<numbe
   })
   const results: any[] = data?.results || []
   if (!results.length) return undefined
-  // Prefer exact year match if provided, else top result
-  if (year) {
-    const exact = results.find((r) => typeof r.release_date === 'string' && r.release_date.startsWith(String(year)))
-    if (exact) return exact.id
+  // Normalize helper
+  const norm = (s: string) => s
+    .toLowerCase()
+    .replace(/^(the|a|an)\s+/i, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+  const want = norm(title)
+  // Candidate scoring: prefer exact normalized title; then year match; then highest vote_count
+  let best: any | undefined
+  let bestScore = -1
+  for (const r of results) {
+    const rTitle = typeof r.title === 'string' ? r.title : ''
+    const rNorm = norm(rTitle)
+    const rYear = r.release_date ? Number(String(r.release_date).slice(0, 4)) : undefined
+    let score = 0
+    if (rNorm === want) score += 10
+    if (year && rYear === year) score += 5
+    // Penalize obvious session/doc variants when main feature exists
+    if (/session|extended|making of|behind the|in the edges|concert|live/i.test(rTitle)) score -= 4
+    // Weight by popularity when tie
+    const pop = typeof r.vote_count === 'number' ? r.vote_count : 0
+    score += Math.min(3, Math.floor(Math.log10(pop + 1)))
+    if (score > bestScore) { best = r; bestScore = score }
   }
-  return results[0]?.id
+  return best?.id || results[0]?.id
+}
+
+export async function searchMovies(query: string, year?: number): Promise<Array<{ id: number; title: string; year?: number; posterPath?: string; tmdbRating?: number }>> {
+  const key = getTmdbKey()
+  if (!key || !query.trim()) return []
+  const { data } = await axios.get(`${API_BASE}/search/movie`, {
+    params: { api_key: key, query, year }
+  })
+  const results: any[] = data?.results || []
+  return results.slice(0, 20).map((r) => ({
+    id: r.id,
+    title: r.title,
+    year: r.release_date ? Number(String(r.release_date).slice(0, 4)) : undefined,
+    posterPath: r.poster_path || undefined,
+    tmdbRating: typeof r.vote_average === 'number' ? Math.round(r.vote_average * 10) / 10 : undefined
+  }))
 }
