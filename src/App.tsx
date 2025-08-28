@@ -8,6 +8,8 @@ import { db } from './store/db'
 import ListDetail from './pages/ListDetail'
 import MoviePage from './pages/Movie'
 import SearchPage from './pages/Search'
+import Auth from './pages/Auth';
+
 const AddList = React.lazy(() => import('./pages/AddList'))
 
 export default function App() {
@@ -25,6 +27,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<RootRedirect />} />
             <Route path="/lists" element={<ListDetail />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/lists/manage" element={<ListsManage />} />
             <Route path="/lists/add" element={<AddList />} />
             <Route path="/lists/:id" element={<ListDetail />} />
