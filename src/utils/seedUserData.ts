@@ -1,16 +1,6 @@
-import { supabase } from '../services/supabase';
-// Adjust the import below to match your static movie list export
-// If you have a JSON version of the list, use this import:
-// import movieList from '../assets/TSPDT100-C0EFDFkb.json';
 
-// If you only have the JS file, you can import it dynamically:
-let movieList: any[] = [];
-try {
-  // @ts-ignore
-  movieList = (await import('../assets/TSPDT100-C0EFDFkb.js')).default || [];
-} catch (e) {
-  console.error('Could not load movie list asset:', e);
-}
+import { supabase } from '../services/supabase';
+import movieList from '../assets/TSPDT100.json';
 
 export async function seedUserData(userId: string) {
   // Check if user already has lists
