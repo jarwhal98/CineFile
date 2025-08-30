@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../services/supabase';
+import { seedUserData } from '../utils/seedUserData';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -7,20 +8,28 @@ const Auth = () => {
   const [message, setMessage] = useState('');
 
   const handleLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setMessage(`Login failed: ${error.message}`);
     } else {
       setMessage('Logged in successfully!');
+      const user = data?.user;
+      if (user) {
+        await seedUserData(user.id);
+      }
     }
   };
 
   const handleSignup = async () => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
       setMessage(`Signup failed: ${error.message}`);
     } else {
       setMessage('Signed up successfully! Check your email to confirm.');
+      const user = data?.user;
+      if (user) {
+        await seedUserData(user.id);
+      }
     }
   };
 

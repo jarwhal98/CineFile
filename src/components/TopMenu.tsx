@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded'
@@ -6,7 +6,37 @@ import ListIcon from '@mui/icons-material/List'
 import SearchIcon from '@mui/icons-material/Search'
 import SettingsIcon from '@mui/icons-material/Settings'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, Link } from 'react-router-dom'
+// removed duplicate import
+import { supabase } from '../services/supabase';
+function AuthNav() {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setUser(data?.session?.user || null));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
+  return user ? (
+    <MenuItem onClick={handleLogout}>
+      <ListItemText primary="Sign Out" />
+    </MenuItem>
+  ) : (
+    <MenuItem component={Link} to="/auth">
+      <ListItemText primary="Sign In" />
+    </MenuItem>
+  );
+}
 
 export default function TopMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -89,6 +119,8 @@ export default function TopMenu() {
           <ListItemText primary="Settings" />
           <ChevronRightRoundedIcon fontSize="small" />
         </MenuItem>
+        <Divider sx={{ my: 0.5 }} />
+        <AuthNav />
       </Menu>
     </>
   )
