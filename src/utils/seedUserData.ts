@@ -22,7 +22,7 @@ export async function seedUserData(userId: string) {
       user_id: userId,
     });
     if (insertError) {
-      console.error(`Failed to insert list: ${list.title}`, insertError);
+      console.error(`Failed to insert list: ${list.Title}`, insertError);
     }
   }
 }
