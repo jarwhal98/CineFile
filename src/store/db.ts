@@ -3,7 +3,7 @@ import { buildListFromTitles, default as baseSeed } from '../data/seed'
 import { searchMovieId, fetchMovie } from '../services/tmdb'
 import Papa from 'papaparse'
 
-// Interfaces (Restored 'count' property)
+// Interfaces
 export interface Movie {
   id: number // TMDB id
   title: string
@@ -34,7 +34,7 @@ export interface ListDef {
   name: string // display title
   slug?: string
   source?: string
-  count?: number // Restored this deprecated property as other components still use it
+  count?: number
   itemCount?: number
   createdBy?: string
   createdAt?: string
@@ -42,7 +42,7 @@ export interface ListDef {
   visibility?: 'private' | 'public'
 }
 
-// Dexie DB Class (Unchanged)
+// Dexie DB Class
 export class CineFileDB extends Dexie {
   movies!: Table<Movie, number>
   lists!: Table<ListDef, string>
@@ -63,9 +63,8 @@ export class CineFileDB extends Dexie {
 
 export const db = new CineFileDB()
 
-// ==========================================================
-// RESTORED FUNCTIONS
-// ==========================================================
+
+// Auto-generated "Your Top" List functions
 let userTopTimer: any = null
 export async function recomputeUserTopList() {
   const listId = 'your-top'
@@ -98,68 +97,94 @@ db.movies.hook('deleting', () => scheduleUserTopListSync())
 
 
 // ==========================================================
-// CORRECTED AND SIMPLIFIED SEED FUNCTION
+// SEEDER THAT PROCESSES ALL LISTS
 // ==========================================================
 export async function seedIfEmpty() {
   try {
-    // Use a more robust check that ignores the auto-generated list
-    const lists = await db.lists.toArray();
-    const hasContentLists = lists.some(l => l.id !== 'your-top');
-
-    if (hasContentLists) {
+    const existingCount = await db.lists.where('id').notEqual('your-top').count();
+    if (existingCount > 0) {
       console.log('[seeding] SKIPPED: Database already has content lists.');
       return;
     }
 
     console.log('[seeding] STARTING: Database is empty, proceeding with seed.');
 
-    // Step 1: Process the NYT Top 100 list to get movie IDs
-    console.log('[seeding] Processing NYT Top 100 list...');
-    const nytRaw: Array<{ rank: number; title: string; year?: number }> = (await import('../data/nyt_top100_21st.json')).default as any;
-    const nytList = await buildListFromTitles('nyt-top-100-21st', 'New York Times 100 Best Movies of the 21st Century', 'NYTimes', nytRaw, searchMovieId);
+    const allListsToProcess = [];
 
-    if (!nytList || !nytList.items || nytList.items.length === 0) {
-      throw new Error("Seeding failed: Could not build the NYT list from titles.");
+    // Define all lists and their data sources
+    const listSources = [
+      {
+        id: 'nyt-top-100-21st',
+        name: 'New York Times 100 Best Movies of the 21st Century',
+        source: 'NYTimes',
+        importer: () => import('../data/nyt_top100_21st.json').then(m => m.default as any[]),
+        parser: (entries: any[]) => entries
+      },
+      {
+        id: 'rollingstone-animated-40',
+        name: 'Rolling Stone: 40 Animated (like TSPDT100)',
+        source: 'Rolling Stone',
+        importer: () => import('../data/rollingstone_40_animated_like_TSPDT100.csv?raw').then(m => m.default as string),
+        parser: (csv: string) => (Papa.parse(csv, { header: true }).data as any[]).map(r => ({ rank: Number(r.Pos), title: r.Title, year: Number(r.Year) }))
+      },
+      // ... Add other list sources here in the same pattern
+    ];
+    
+    // Process all list sources
+    for (const source of listSources) {
+        console.log(`[seeding] Processing ${source.name}...`);
+        const rawData = await source.importer();
+        const entries = source.parser(rawData);
+        const listData = await buildListFromTitles(source.id, source.name, source.source, entries, searchMovieId);
+        if (listData) {
+            allListsToProcess.push(listData);
+        }
     }
+    
+    if (allListsToProcess.length === 0) {
+        throw new Error("Seeding failed: Could not build any lists from titles.");
+    }
+    
+    // Gather all unique movie IDs from all lists
+    const allItems = allListsToProcess.flatMap(l => l.items || []);
+    const uniqueMovieIds = [...new Set(allItems.map(item => item.movieId))];
+    
+    console.log(`[seeding] Found ${uniqueMovieIds.length} unique movies across all lists. Fetching details...`);
 
-    console.log(`[seeding] Found ${nytList.items.length} movies from the NYT list. Fetching full movie details...`);
-
-    // Step 2: Fetch full movie data for all unique movie IDs
-    const movieIds = [...new Set(nytList.items.map(item => item.movieId))];
-    const moviePromises = movieIds.map(id => fetchMovie(id));
+    // Fetch details for all unique movies in one batch
+    const moviePromises = uniqueMovieIds.map(id => fetchMovie(id));
     const movies = await Promise.all(moviePromises);
 
-    console.log(`[seeding] Fetched details for ${movies.length} movies. Saving to database...`);
-    
-    // Step 3: Save everything in a single transaction
+    console.log(`[seeding] Fetched details for ${movies.length} movies. Saving everything to database...`);
+
+    // Save everything in a single transaction
     await db.transaction('rw', db.movies, db.lists, db.listItems, async () => {
-      // Save all the full movie objects
-      await db.movies.bulkPut(movies);
+        await db.movies.bulkPut(movies);
 
-      // Save the list definition
-      await db.lists.put({
-        id: nytList.id,
-        name: nytList.name,
-        source: nytList.source,
-        slug: nytList.source || 'Imported',
-        itemCount: nytList.items.length,
-        count: nytList.items.length, // Add the count property back
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: 'system',
-        visibility: 'public'
-      });
+        for (const list of allListsToProcess) {
+            await db.lists.put({
+                id: list.id,
+                name: list.name,
+                source: list.source,
+                slug: list.source || 'Imported',
+                itemCount: list.items.length,
+                count: list.items.length,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                createdBy: 'system',
+                visibility: 'public'
+            });
 
-      // Create and save the list items with the required 'id'
-      const now = new Date().toISOString();
-      const listItems = nytList.items.map((it, idx) => ({
-        id: `${nytList.id}:${it.rank ?? idx + 1}`,
-        listId: nytList.id,
-        movieId: it.movieId,
-        rank: it.rank ?? idx + 1,
-        addedAt: now
-      }));
-      await db.listItems.bulkPut(listItems);
+            const now = new Date().toISOString();
+            const listItems = list.items.map((it, idx) => ({
+                id: `${list.id}:${it.rank ?? idx + 1}`,
+                listId: list.id,
+                movieId: it.movieId,
+                rank: it.rank ?? idx + 1,
+                addedAt: now
+            }));
+            await db.listItems.bulkPut(listItems);
+        }
     });
 
     console.log('[seeding] Seed process COMPLETED successfully.');
