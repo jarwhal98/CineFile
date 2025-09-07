@@ -45,40 +45,25 @@ export async function syncNow(): Promise<SyncResult> {
       db.listItems.toArray(),
     ])
 
+    // ====================================================================
+    // ===== THE FINAL FIX IS HERE ========================================
+    // Converting ALL keys to lowercase to match the database reality
+    // ====================================================================
     const listsPayload = localLists.map((l: any) => ({
       id: l.id, name: l.name, slug: l.slug, source: l.source, visibility: l.visibility,
       itemcount: l.itemCount, createdby: l.createdBy, createdat: l.createdAt,
       updatedat: l.updatedAt, deletedat: l.deletedAt, user_id: userId
     }));
     
-    // ====================================================================
-    // ===== THE FINAL FIX IS HERE ========================================
-    // Correcting the keys to camelCase to match your screenshots
-    // ====================================================================
     const moviesPayload = localMovies.map((m: any) => ({
-        id: m.id,
-        title: m.title,
-        year: m.year,
-        posterPath: m.posterPath,       // Corrected from posterpath
-        backdropPath: m.backdropPath,   // Corrected from backdroppath
-        directors: m.directors,
-        cast: m.cast,
-        tmdbRating: m.tmdbRating,       // Corrected from tmdb_rating
-        seen: m.seen,
-        myRating: m.myRating,           // Corrected from my_rating
-        watchedAt: m.watchedAt,         // Corrected from watched_at
-        runtime: m.runtime,
-        genres: m.genres,
-        overview: m.overview,
-        user_id: userId
+        id: m.id, title: m.title, year: m.year, posterpath: m.posterPath, backdroppath: m.backdropPath,
+        directors: m.directors, cast: m.cast, tmdbrating: m.tmdbRating, seen: m.seen,
+        myrating: m.myRating, watchedat: m.watchedAt, runtime: m.runtime,
+        genres: m.genres, overview: m.overview, user_id: userId
     }));
 
     const listItemsPayload = localListItems.map((li: any) => ({
-        id: li.id,
-        listid: li.listId,
-        movieid: li.movieId,
-        rank: li.rank,
-        user_id: userId
+        id: li.id, listid: li.listId, movieid: li.movieId, rank: li.rank, user_id: userId
     }));
     
     const chunk = <T,>(arr: T[], size = 500) =>
@@ -109,16 +94,17 @@ export async function syncNow(): Promise<SyncResult> {
       console.warn('[sync] pull errors:', mRes.error, lRes.error, liRes.error)
       return 'error'
     }
-
+    
+    // Transform incoming data from Supabase back to the app's camelCase format
     const pulledLists = (lRes.data || []).map((l: any) => ({
         id: l.id, name: l.name, slug: l.slug, source: l.source, visibility: l.visibility,
         itemCount: l.itemcount, createdBy: l.createdby, createdAt: l.createdat,
         updatedAt: l.updatedat, deletedAt: l.deletedat, count: l.itemcount
     }));
     const pulledMovies = (mRes.data || []).map((m: any) => ({
-        id: m.id, title: m.title, year: m.year, posterPath: m.posterPath, backdropPath: m.backdropPath,
-        directors: m.directors, cast: m.cast, tmdbRating: m.tmdbRating, seen: m.seen,
-        myRating: m.myRating, watchedAt: m.watchedAt, runtime: m.runtime,
+        id: m.id, title: m.title, year: m.year, posterPath: m.posterpath, backdropPath: m.backdroppath,
+        directors: m.directors, cast: m.cast, tmdbRating: m.tmdbrating, seen: m.seen,
+        myRating: m.myrating, watchedAt: m.watchedat, runtime: m.runtime,
         genres: m.genres, overview: m.overview
     }));
     const pulledListItems = (liRes.data || []).map((li: any) => ({
