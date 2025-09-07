@@ -3,7 +3,7 @@ import { buildListFromTitles, default as baseSeed } from '../data/seed'
 import { searchMovieId, fetchMovie } from '../services/tmdb'
 import Papa from 'papaparse'
 
-// Interfaces
+// Interfaces (Restored 'count' property)
 export interface Movie {
   id: number // TMDB id
   title: string
@@ -34,6 +34,7 @@ export interface ListDef {
   name: string // display title
   slug?: string
   source?: string
+  count?: number // Restored this deprecated property as other components still use it
   itemCount?: number
   createdBy?: string
   createdAt?: string
@@ -41,7 +42,7 @@ export interface ListDef {
   visibility?: 'private' | 'public'
 }
 
-// Dexie DB Class
+// Dexie DB Class (Unchanged)
 export class CineFileDB extends Dexie {
   movies!: Table<Movie, number>
   lists!: Table<ListDef, string>
@@ -62,15 +63,51 @@ export class CineFileDB extends Dexie {
 
 export const db = new CineFileDB()
 
+// ==========================================================
+// RESTORED FUNCTIONS
+// ==========================================================
+let userTopTimer: any = null
+export async function recomputeUserTopList() {
+  const listId = 'your-top'
+  const now = new Date().toISOString()
+  const rated = await db.movies.filter((m) => typeof m.myRating === 'number' && (m.myRating as number) > 0).toArray()
+  rated.sort((a, b) => (b.myRating! - a.myRating!) || ((b.tmdbRating ?? 0) - (a.tmdbRating ?? 0)) || String(a.title).localeCompare(String(b.title)))
+  const items = rated.map((m, idx) => ({ id: `${listId}:${idx + 1}`, listId, movieId: m.id, rank: idx + 1, addedAt: now }))
+  const name = `Your Top ${rated.length} List`
+  await db.transaction('rw', db.lists, db.listItems, async () => {
+    const exists = await db.lists.get(listId)
+    if (!exists) {
+      await db.lists.put({ id: listId, name, source: 'User', slug: 'User', itemCount: items.length, count: items.length, createdAt: now, updatedAt: now, createdBy: 'system', visibility: 'private' })
+    } else {
+      await db.lists.update(listId, { name, itemCount: items.length, count: items.length, updatedAt: now, visibility: exists.visibility || 'private' })
+    }
+    const existing = await db.listItems.where('listId').equals(listId).toArray()
+    if (existing.length) await db.listItems.bulkDelete(existing.map((i) => i.id))
+    if (items.length) await db.listItems.bulkPut(items)
+  })
+}
+
+export function scheduleUserTopListSync(delay = 250) {
+  if (userTopTimer) clearTimeout(userTopTimer)
+  userTopTimer = setTimeout(() => { recomputeUserTopList().catch((e) => console.warn('[cinefile] Top list sync failed', e)) }, delay) as any
+}
+
+db.movies.hook('creating', () => scheduleUserTopListSync())
+db.movies.hook('updating', () => scheduleUserTopListSync())
+db.movies.hook('deleting', () => scheduleUserTopListSync())
+
 
 // ==========================================================
 // CORRECTED AND SIMPLIFIED SEED FUNCTION
 // ==========================================================
 export async function seedIfEmpty() {
   try {
-    const existingCount = await db.lists.count()
-    if (existingCount > 0) {
-      console.log('[seeding] SKIPPED: Database is not empty.');
+    // Use a more robust check that ignores the auto-generated list
+    const lists = await db.lists.toArray();
+    const hasContentLists = lists.some(l => l.id !== 'your-top');
+
+    if (hasContentLists) {
+      console.log('[seeding] SKIPPED: Database already has content lists.');
       return;
     }
 
@@ -106,6 +143,7 @@ export async function seedIfEmpty() {
         source: nytList.source,
         slug: nytList.source || 'Imported',
         itemCount: nytList.items.length,
+        count: nytList.items.length, // Add the count property back
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         createdBy: 'system',
