@@ -1,8 +1,7 @@
 // src/services/sync.ts
 import { db } from '../store/db'
-import { supabase, hasSupabase } from './supabase' // <— if your file is ./supabase.ts, change this import
-
-
+// CHANGE 1: Removed hasSupabase from the import line below
+import { supabase } from './supabase' 
 
 type EnsureAuthResult = 'ok' | 'sent' | 'disabled' | 'error'
 type SyncResult = 'ok' | 'disabled' | 'error'
@@ -15,7 +14,8 @@ type SyncResult = 'ok' | 'disabled' | 'error'
  */
 export async function ensureAuth(email: string): Promise<EnsureAuthResult> {
   try {
-    if (!hasSupabase() || !supabase) return 'disabled'
+    // CHANGE 2: Removed the check for the missing function
+    if (!supabase) return 'disabled'
 
     // already signed in?
     const { data: sessData, error: sessErr } = await supabase.auth.getSession()
@@ -52,7 +52,8 @@ export async function ensureAuth(email: string): Promise<EnsureAuthResult> {
  */
 export async function syncNow(): Promise<SyncResult> {
   try {
-    if (!hasSupabase() || !supabase) return 'disabled'
+    // CHANGE 3: Removed the check for the missing function
+    if (!supabase) return 'disabled'
 
     // must be signed in to write/read per RLS
     const { data: sessData, error: sessErr } = await supabase.auth.getSession()
