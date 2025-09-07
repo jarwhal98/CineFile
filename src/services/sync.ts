@@ -40,30 +40,38 @@ export async function syncNow(): Promise<SyncResult> {
       db.listItems.toArray(),
     ])
 
-    // Transform local objects to match the exact Supabase schema
-    const listsPayload = localLists.map((l) => ({
+    // Transform local camelCase to Supabase snake_case/lowercase
+    const listsPayload = localLists.map((l: any) => ({
       id: l.id, name: l.name, slug: l.slug, source: l.source, visibility: l.visibility,
       itemcount: l.itemCount, createdby: l.createdBy, createdat: l.createdAt,
       updatedat: l.updatedAt, deletedat: null, user_id: userId
     }));
     
-    const moviesPayload = localMovies.map((m) => ({
-        id: m.id, title: m.title, year: m.year, posterPath: m.posterPath, backdropPath: m.backdropPath,
-        directors: m.directors, cast: m.cast, tmdbRating: m.tmdbRating, seen: m.seen,
-        myRating: m.myRating, watchedAt: m.watchedAt, runtime: m.runtime,
-        genres: m.genres, overview: m.overview, user_id: userId
+    const moviesPayload = localMovies.map((m: any) => ({
+        id: m.id, title: m.title, year: m.year,
+        poster_path: m.posterPath,        // Corrected to snake_case
+        backdrop_path: m.backdropPath,    // Corrected to snake_case
+        directors: m.directors, cast: m.cast,
+        tmdb_rating: m.tmdbRating,        // Corrected to snake_case
+        seen: m.seen,
+        my_rating: m.myRating,            // Corrected to snake_case
+        watched_at: m.watchedAt,          // Corrected to snake_case
+        runtime: m.runtime, genres: m.genres, overview: m.overview, user_id: userId
     }));
 
-    const listItemsPayload = localListItems.map((li) => ({
-        id: li.id, list_id: li.listId, movie_id: li.movieId, rank: li.rank, 
-        addedat: li.addedAt, user_id: userId
+    const listItemsPayload = localListItems.map((li: any) => ({
+        id: li.id,
+        list_id: li.listId,               // Corrected to snake_case
+        movie_id: li.movieId,             // Corrected to snake_case
+        rank: li.rank, 
+        user_id: userId
     }));
     
-    // Upsert in chunks
     const chunk = <T,>(arr: T[], size = 200) =>
       Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
         arr.slice(i * size, i * size + size)
       );
+
     for (const part of chunk(listsPayload)) {
       const { error } = await supabase.from('lists').upsert(part)
       if (error) { console.error('[sync] upsert lists error:', error); return 'error' }
@@ -93,12 +101,13 @@ export async function syncNow(): Promise<SyncResult> {
     const pulledLists: ListDef[] = (lRes.data || []).map((l: any) => ({
         id: l.id, name: l.name, slug: l.slug, source: l.source, visibility: l.visibility,
         itemCount: l.itemcount, createdBy: l.createdby, createdAt: l.createdat,
-        updatedAt: l.updatedat
+        updatedAt: l.updatedat, count: l.itemcount
     }));
     const pulledMovies: Movie[] = (mRes.data || []).map((m: any) => ({
-        id: m.id, title: m.title, year: m.year, posterPath: m.posterPath, backdropPath: m.backdropPath,
-        directors: m.directors, cast: m.cast, tmdbRating: m.tmdbRating, seen: m.seen,
-        myRating: m.myRating, watchedAt: m.watchedAt, runtime: m.runtime,
+        id: m.id, title: m.title, year: m.year,
+        posterPath: l.poster_path, backdropPath: l.backdrop_path,
+        directors: m.directors, cast: m.cast, tmdbRating: m.tmdb_rating, seen: m.seen,
+        myRating: m.my_rating, watchedAt: m.watched_at, runtime: m.runtime,
         genres: m.genres, overview: m.overview
     }));
     const pulledListItems: ListItem[] = (liRes.data || []).map((li: any) => ({
