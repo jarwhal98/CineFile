@@ -33,32 +33,37 @@ export async function syncNow(): Promise<SyncResult> {
     }
     const userId = sessData.session.user.id
 
-    // ---- PUSH (Dexie → Supabase) ----
     const [localMovies, localLists, localListItems] = await Promise.all([
       db.movies.toArray(),
       db.lists.toArray(),
       db.listItems.toArray(),
     ])
 
-    // Transform local camelCase to Supabase snake_case/lowercase
+    // ====================================================================
+    // ===== THE FINAL, METICULOUSLY CORRECTED TRANSFORMATIONS ===========
+    // ====================================================================
+
+    // PUSH: Transform local camelCase to match each table's unique schema
     const listsPayload = localLists.map((l: any) => ({
       id: l.id, name: l.name, slug: l.slug, source: l.source, visibility: l.visibility,
       itemcount: l.itemCount, createdby: l.createdBy, createdat: l.createdAt,
       updatedat: l.updatedAt, deletedat: null, user_id: userId
     }));
     
+    // Movies table uses camelCase, per your screenshot
     const moviesPayload = localMovies.map((m: any) => ({
         id: m.id, title: m.title, year: m.year,
-        poster_path: m.posterPath,
-        backdrop_path: m.backdropPath,
+        posterPath: m.posterPath,
+        backdropPath: m.backdropPath,
         directors: m.directors, cast: m.cast,
-        tmdb_rating: m.tmdbRating,
+        tmdbRating: m.tmdbRating,
         seen: m.seen,
-        my_rating: m.myRating,
-        watched_at: m.watchedAt,
+        myRating: m.myRating,
+        watchedAt: m.watchedAt,
         runtime: m.runtime, genres: m.genres, overview: m.overview, user_id: userId
     }));
 
+    // List Items table uses snake_case, per your screenshot
     const listItemsPayload = localListItems.map((li: any) => ({
         id: li.id,
         list_id: li.listId,
@@ -97,23 +102,17 @@ export async function syncNow(): Promise<SyncResult> {
       return 'error'
     }
     
-    // Transform incoming data from Supabase back to the app's camelCase format
+    // PULL: Transform incoming data from Supabase back to the app's consistent camelCase format
     const pulledLists: ListDef[] = (lRes.data || []).map((l: any) => ({
         id: l.id, name: l.name, slug: l.slug, source: l.source, visibility: l.visibility,
         itemCount: l.itemcount, createdBy: l.createdby, createdAt: l.createdat,
-        updatedAt: l.updatedat, count: l.itemcount
+        updatedAt: l.updatedat
     }));
-
-    // ====================================================================
-    // ===== THE TYPO WAS HERE ============================================
-    // It said "l.poster_path" instead of "m.poster_path"
-    // ====================================================================
     const pulledMovies: Movie[] = (mRes.data || []).map((m: any) => ({
         id: m.id, title: m.title, year: m.year,
-        posterPath: m.poster_path, 
-        backdropPath: m.backdrop_path,
-        directors: m.directors, cast: m.cast, tmdbRating: m.tmdb_rating, seen: m.seen,
-        myRating: m.my_rating, watchedAt: m.watched_at, runtime: m.runtime,
+        posterPath: m.posterPath, backdropPath: m.backdropPath,
+        directors: m.directors, cast: m.cast, tmdbRating: m.tmdbRating, seen: m.seen,
+        myRating: m.myRating, watchedAt: m.watchedAt, runtime: m.runtime,
         genres: m.genres, overview: m.overview
     }));
     const pulledListItems: ListItem[] = (liRes.data || []).map((li: any) => ({
