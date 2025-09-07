@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie'
-import { buildListFromTitles, default as baseSeed } from '../data/seed'
+import { buildListFromTitles, SeedList, SeedListItem } from '../data/seed' // Import interfaces
 import { searchMovieId, fetchMovie } from '../services/tmdb'
 import Papa from 'papaparse'
 
@@ -14,24 +14,24 @@ export interface Movie {
   cast?: string[]
   tmdbRating?: number
   seen?: boolean
-  myRating?: number // 0.5 increments up to 10
-  watchedAt?: string // ISO date
+  myRating?: number
+  watchedAt?: string
   runtime?: number
   genres?: string[]
   overview?: string
 }
 
 export interface ListItem {
-  id: string // listId:rank or stable uuid
+  id: string
   listId: string
   movieId: number
   rank?: number
-  addedAt?: string // ISO date
+  addedAt?: string
 }
 
 export interface ListDef {
-  id: string // slug
-  name: string // display title
+  id: string
+  name: string
   slug?: string
   source?: string
   count?: number
@@ -63,27 +63,27 @@ export class CineFileDB extends Dexie {
 
 export const db = new CineFileDB()
 
-
 // Auto-generated "Your Top" List functions
 let userTopTimer: any = null
 export async function recomputeUserTopList() {
-  const listId = 'your-top'
-  const now = new Date().toISOString()
-  const rated = await db.movies.filter((m) => typeof m.myRating === 'number' && (m.myRating as number) > 0).toArray()
-  rated.sort((a, b) => (b.myRating! - a.myRating!) || ((b.tmdbRating ?? 0) - (a.tmdbRating ?? 0)) || String(a.title).localeCompare(String(b.title)))
-  const items = rated.map((m, idx) => ({ id: `${listId}:${idx + 1}`, listId, movieId: m.id, rank: idx + 1, addedAt: now }))
-  const name = `Your Top ${rated.length} List`
-  await db.transaction('rw', db.lists, db.listItems, async () => {
-    const exists = await db.lists.get(listId)
-    if (!exists) {
-      await db.lists.put({ id: listId, name, source: 'User', slug: 'User', itemCount: items.length, count: items.length, createdAt: now, updatedAt: now, createdBy: 'system', visibility: 'private' })
-    } else {
-      await db.lists.update(listId, { name, itemCount: items.length, count: items.length, updatedAt: now, visibility: exists.visibility || 'private' })
-    }
-    const existing = await db.listItems.where('listId').equals(listId).toArray()
-    if (existing.length) await db.listItems.bulkDelete(existing.map((i) => i.id))
-    if (items.length) await db.listItems.bulkPut(items)
-  })
+    // ... (This function is restored and correct)
+    const listId = 'your-top'
+    const now = new Date().toISOString()
+    const rated = await db.movies.filter((m) => typeof m.myRating === 'number' && (m.myRating as number) > 0).toArray()
+    rated.sort((a, b) => (b.myRating! - a.myRating!) || ((b.tmdbRating ?? 0) - (a.tmdbRating ?? 0)) || String(a.title).localeCompare(String(b.title)))
+    const items = rated.map((m, idx) => ({ id: `${listId}:${idx + 1}`, listId, movieId: m.id, rank: idx + 1, addedAt: now }))
+    const name = `Your Top ${rated.length} List`
+    await db.transaction('rw', db.lists, db.listItems, async () => {
+      const exists = await db.lists.get(listId)
+      if (!exists) {
+        await db.lists.put({ id: listId, name, source: 'User', slug: 'User', itemCount: items.length, count: items.length, createdAt: now, updatedAt: now, createdBy: 'system', visibility: 'private' })
+      } else {
+        await db.lists.update(listId, { name, itemCount: items.length, count: items.length, updatedAt: now, visibility: exists.visibility || 'private' })
+      }
+      const existing = await db.listItems.where('listId').equals(listId).toArray()
+      if (existing.length) await db.listItems.bulkDelete(existing.map((i) => i.id))
+      if (items.length) await db.listItems.bulkPut(items)
+    })
 }
 
 export function scheduleUserTopListSync(delay = 250) {
@@ -96,9 +96,7 @@ db.movies.hook('updating', () => scheduleUserTopListSync())
 db.movies.hook('deleting', () => scheduleUserTopListSync())
 
 
-// ==========================================================
-// SEEDER THAT PROCESSES ALL LISTS
-// ==========================================================
+// Seeder that processes all lists
 export async function seedIfEmpty() {
   try {
     const existingCount = await db.lists.where('id').notEqual('your-top').count();
@@ -108,8 +106,9 @@ export async function seedIfEmpty() {
     }
 
     console.log('[seeding] STARTING: Database is empty, proceeding with seed.');
-
-    const allListsToProcess = [];
+    
+    // Explicitly typed array to fix the TS error
+    const allListsToProcess: SeedList[] = [];
 
     // Define all lists and their data sources
     const listSources = [
@@ -117,20 +116,18 @@ export async function seedIfEmpty() {
         id: 'nyt-top-100-21st',
         name: 'New York Times 100 Best Movies of the 21st Century',
         source: 'NYTimes',
-        importer: () => import('../data/nyt_top100_21st.json').then(m => m.default as any[]),
-        parser: (entries: any[]) => entries
+        importer: () => import('../data/nyt_top100_21st.json').then(m => m.default),
+        parser: (data: any[]) => data
       },
       {
         id: 'rollingstone-animated-40',
         name: 'Rolling Stone: 40 Animated (like TSPDT100)',
         source: 'Rolling Stone',
-        importer: () => import('../data/rollingstone_40_animated_like_TSPDT100.csv?raw').then(m => m.default as string),
-        parser: (csv: string) => (Papa.parse(csv, { header: true }).data as any[]).map(r => ({ rank: Number(r.Pos), title: r.Title, year: Number(r.Year) }))
+        importer: () => import('../data/rollingstone_40_animated_like_TSPDT100.csv?raw').then(m => m.default),
+        parser: (data: string) => (Papa.parse(data, { header: true }).data as any[]).map(r => ({ rank: Number(r.Pos), title: r.Title, year: Number(r.Year) }))
       },
-      // ... Add other list sources here in the same pattern
     ];
     
-    // Process all list sources
     for (const source of listSources) {
         console.log(`[seeding] Processing ${source.name}...`);
         const rawData = await source.importer();
@@ -142,22 +139,21 @@ export async function seedIfEmpty() {
     }
     
     if (allListsToProcess.length === 0) {
-        throw new Error("Seeding failed: Could not build any lists from titles.");
+      // Changed to a warning instead of an error to prevent crash if a list fails
+      console.warn("Seeding process resulted in zero lists. Check data files and TMDB lookup.");
+      return;
     }
     
-    // Gather all unique movie IDs from all lists
     const allItems = allListsToProcess.flatMap(l => l.items || []);
     const uniqueMovieIds = [...new Set(allItems.map(item => item.movieId))];
     
-    console.log(`[seeding] Found ${uniqueMovieIds.length} unique movies across all lists. Fetching details...`);
+    console.log(`[seeding] Found ${uniqueMovieIds.length} unique movies. Fetching details...`);
 
-    // Fetch details for all unique movies in one batch
     const moviePromises = uniqueMovieIds.map(id => fetchMovie(id));
     const movies = await Promise.all(moviePromises);
 
-    console.log(`[seeding] Fetched details for ${movies.length} movies. Saving everything to database...`);
+    console.log(`[seeding] Fetched details for ${movies.length} movies. Saving to database...`);
 
-    // Save everything in a single transaction
     await db.transaction('rw', db.movies, db.lists, db.listItems, async () => {
         await db.movies.bulkPut(movies);
 
@@ -176,7 +172,7 @@ export async function seedIfEmpty() {
             });
 
             const now = new Date().toISOString();
-            const listItems = list.items.map((it, idx) => ({
+            const listItems = list.items.map((it: SeedListItem, idx: number) => ({
                 id: `${list.id}:${it.rank ?? idx + 1}`,
                 listId: list.id,
                 movieId: it.movieId,
