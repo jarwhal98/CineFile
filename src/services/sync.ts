@@ -1,7 +1,6 @@
 // src/services/sync.ts
 import { db } from '../store/db'
-// CHANGE 1: Removed hasSupabase from the import line below
-import { supabase } from './supabase' 
+import { supabase } from './supabase'
 
 type EnsureAuthResult = 'ok' | 'sent' | 'disabled' | 'error'
 type SyncResult = 'ok' | 'disabled' | 'error'
@@ -14,7 +13,6 @@ type SyncResult = 'ok' | 'disabled' | 'error'
  */
 export async function ensureAuth(email: string): Promise<EnsureAuthResult> {
   try {
-    // CHANGE 2: Removed the check for the missing function
     if (!supabase) return 'disabled'
 
     // already signed in?
@@ -52,7 +50,6 @@ export async function ensureAuth(email: string): Promise<EnsureAuthResult> {
  */
 export async function syncNow(): Promise<SyncResult> {
   try {
-    // CHANGE 3: Removed the check for the missing function
     if (!supabase) return 'disabled'
 
     // must be signed in to write/read per RLS
@@ -76,23 +73,47 @@ export async function syncNow(): Promise<SyncResult> {
         arr.slice(i * size, i * size + size)
       )
 
-    // Stamp user_id on the way up; rely on DEFAULT auth.uid() if you added it in SQL, but be explicit here too.
+    // ====================================================================
+    // ===== THE FIX IS HERE ==============================================
+    // ====================================================================
+    // Transform the lists payload to match the Supabase table schema exactly
+    const listsPayload = lists.map((l: any) => {
+      // Create a new object to avoid modifying the original
+      const supalist = {
+        id: l.id,
+        name: l.name,
+        slug: l.slug,
+        source: l.source,
+        visibility: l.visibility,
+        // Rename camelCase to lowercase to match Supabase
+        itemcount: l.itemCount, 
+        createdby: l.createdBy,
+        createdat: l.createdAt,
+        updatedat: l.updatedAt,
+        deletedat: l.deletedAt,
+        // Add the user_id
+        user_id: userId
+      };
+      
+      // The 'count' property is removed because it's not in the new object.
+      return supalist;
+    });
+
+    // We assume listItems and movies already match, but you could apply the same transform pattern if needed.
     const moviesPayload = movies.map((m) => ({ ...m, user_id: userId }))
-    const listsPayload = lists.map((l) => ({ ...l, user_id: userId }))
     const listItemsPayload = listItems.map((li) => ({ ...li, user_id: userId }))
 
+    for (const part of chunk(listsPayload)) {
+      const { error } = await supabase.from('lists').upsert(part, { onConflict: 'id' })
+      if (error) {
+        console.warn('[sync] upsert lists error:', error)
+        return 'error'
+      }
+    }
     for (const part of chunk(moviesPayload)) {
       const { error } = await supabase.from('movies').upsert(part, { onConflict: 'id' })
       if (error) {
         console.warn('[sync] upsert movies error:', error)
-        return 'error'
-      }
-    }
-    for (const part of chunk(listsPayload)) {
-      // onConflict by primary key "id" (text) as per our schema
-      const { error } = await supabase.from('lists').upsert(part, { onConflict: 'id' })
-      if (error) {
-        console.warn('[sync] upsert lists error:', error)
         return 'error'
       }
     }
