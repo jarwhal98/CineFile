@@ -5,7 +5,20 @@ import { VitePWA } from 'vite-plugin-pwa'
 // @ts-ignore - vitest types are provided at runtime
 import { configDefaults } from 'vitest/config'
 
+// This is the new section that explicitly reads the variables
+const {
+  VITE_SUPABASE_URL,
+  VITE_SUPABASE_ANON_KEY,
+  VITE_TMDB_API_KEY
+} = process.env;
+
 export default defineConfig({
+  // This is the new "define" block that injects the variables
+  define: {
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(VITE_SUPABASE_URL),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(VITE_SUPABASE_ANON_KEY),
+    'import.meta.env.VITE_TMDB_API_KEY': JSON.stringify(VITE_TMDB_API_KEY),
+  },
   plugins: [
     react(),
     // Only enable PWA in production builds to avoid dev caching issues
