@@ -4,6 +4,7 @@ import movieList from '../assets/TSPDT100.json';
 
 export async function seedUserData(userId: string) {
   // Check if user already has lists
+  if (!supabase) throw new Error("Supabase client not initialized");
   const { data: existingLists, error } = await supabase
     .from('lists')
     .select('id')

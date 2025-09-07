@@ -4,8 +4,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - vitest types are provided at runtime
 import { configDefaults } from 'vitest/config'
+import dotenv from 'dotenv'
 
-// This is the new section that explicitly reads the variables
+// This is the new line that force-loads the .env.local file
+dotenv.config({ path: './.env.local' });
+
+// This section now reads from the newly loaded process.env
 const {
   VITE_SUPABASE_URL,
   VITE_SUPABASE_ANON_KEY,
@@ -13,7 +17,7 @@ const {
 } = process.env;
 
 export default defineConfig({
-  // This is the new "define" block that injects the variables
+  // The define block remains, but it will now have variables to work with
   define: {
     'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(VITE_SUPABASE_URL),
     'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(VITE_SUPABASE_ANON_KEY),
@@ -21,7 +25,6 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    // Only enable PWA in production builds to avoid dev caching issues
     ...(process.env.NODE_ENV === 'production'
       ? [VitePWA({
       registerType: 'autoUpdate',
@@ -58,7 +61,6 @@ export default defineConfig({
     port: 5174,
     strictPort: true
   },
-  // Vitest config (ignored by Vite types but picked up by Vitest)
   test: {
     environment: 'jsdom',
     setupFiles: './vitest.setup.ts',

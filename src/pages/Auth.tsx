@@ -8,6 +8,7 @@ const Auth = () => {
   const [message, setMessage] = useState('');
 
   const handleLogin = async () => {
+    if (!supabase) throw new Error("Supabase client not initialized");
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setMessage(`Login failed: ${error.message}`);
@@ -21,7 +22,8 @@ const Auth = () => {
   };
 
   const handleSignup = async () => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (!supabase) throw new Error("Supabase client not initialized");
+  const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
       setMessage(`Signup failed: ${error.message}`);
     } else {

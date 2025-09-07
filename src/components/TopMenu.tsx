@@ -7,25 +7,38 @@ import SearchIcon from '@mui/icons-material/Search'
 import SettingsIcon from '@mui/icons-material/Settings'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
-// removed duplicate import
-import { supabase } from '../services/supabase';
+import { supabase } from '../services/supabase'
+
+// ---------------------- AuthNav (safe with optional Supabase) ----------------------
 function AuthNav() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setUser(data?.session?.user || null));
+    if (!supabase) return // no cloud sync configured -> skip all auth wiring
+    supabase.auth.getSession().then(({ data }) => setUser(data?.session?.user || null))
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
+      setUser(session?.user || null)
+    })
     return () => {
-      listener?.subscription.unsubscribe();
-    };
-  }, []);
+      listener?.subscription.unsubscribe()
+    }
+  }, [])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  };
+    if (!supabase) return
+    await supabase.auth.signOut()
+    setUser(null)
+  }
+
+  // If Supabase is not configured, either hide auth or show a disabled item.
+  if (!supabase) {
+    return (
+      <MenuItem disabled>
+        <ListItemText primary="Sync unavailable (no Supabase)" />
+      </MenuItem>
+    )
+    // Or: return null  // ← hides the row entirely
+  }
 
   return user ? (
     <MenuItem onClick={handleLogout}>
@@ -35,9 +48,10 @@ function AuthNav() {
     <MenuItem component={Link} to="/auth">
       <ListItemText primary="Sign In" />
     </MenuItem>
-  );
+  )
 }
 
+// ------------------------------- TopMenu -----------------------------------------
 export default function TopMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)

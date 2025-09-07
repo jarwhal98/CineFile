@@ -3,6 +3,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { db, recomputeUserTopList } from '../store/db'
 import { ensureAuth, syncNow } from '../services/sync'
 
+// TEMP: verify Vite env at runtime
+console.log('ENV from Vite:', (import.meta as any).env);
+
 export default function Settings() {
   const [tmdbKey, setTmdbKey] = useState('')
   const envKey = (import.meta as any)?.env?.VITE_TMDB_API_KEY as string | undefined
