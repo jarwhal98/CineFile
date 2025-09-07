@@ -49,20 +49,20 @@ export async function syncNow(): Promise<SyncResult> {
     
     const moviesPayload = localMovies.map((m: any) => ({
         id: m.id, title: m.title, year: m.year,
-        poster_path: m.posterPath,        // Corrected to snake_case
-        backdrop_path: m.backdropPath,    // Corrected to snake_case
+        poster_path: m.posterPath,
+        backdrop_path: m.backdropPath,
         directors: m.directors, cast: m.cast,
-        tmdb_rating: m.tmdbRating,        // Corrected to snake_case
+        tmdb_rating: m.tmdbRating,
         seen: m.seen,
-        my_rating: m.myRating,            // Corrected to snake_case
-        watched_at: m.watchedAt,          // Corrected to snake_case
+        my_rating: m.myRating,
+        watched_at: m.watchedAt,
         runtime: m.runtime, genres: m.genres, overview: m.overview, user_id: userId
     }));
 
     const listItemsPayload = localListItems.map((li: any) => ({
         id: li.id,
-        list_id: li.listId,               // Corrected to snake_case
-        movie_id: li.movieId,             // Corrected to snake_case
+        list_id: li.listId,
+        movie_id: li.movieId,
         rank: li.rank, 
         user_id: userId
     }));
@@ -103,9 +103,15 @@ export async function syncNow(): Promise<SyncResult> {
         itemCount: l.itemcount, createdBy: l.createdby, createdAt: l.createdat,
         updatedAt: l.updatedat, count: l.itemcount
     }));
+
+    // ====================================================================
+    // ===== THE TYPO WAS HERE ============================================
+    // It said "l.poster_path" instead of "m.poster_path"
+    // ====================================================================
     const pulledMovies: Movie[] = (mRes.data || []).map((m: any) => ({
         id: m.id, title: m.title, year: m.year,
-        posterPath: l.poster_path, backdropPath: l.backdrop_path,
+        posterPath: m.poster_path, 
+        backdropPath: m.backdrop_path,
         directors: m.directors, cast: m.cast, tmdbRating: m.tmdb_rating, seen: m.seen,
         myRating: m.my_rating, watchedAt: m.watched_at, runtime: m.runtime,
         genres: m.genres, overview: m.overview
