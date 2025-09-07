@@ -1,3 +1,37 @@
+import { db } from '../store/db'
+import { supabase } from './supabase'
+
+// Type definitions that were missing
+type EnsureAuthResult = 'ok' | 'sent' | 'disabled' | 'error'
+type SyncResult = 'ok' | 'disabled' | 'error'
+
+// The ensureAuth function that was missing
+export async function ensureAuth(email: string): Promise<EnsureAuthResult> {
+  try {
+    if (!supabase) return 'disabled'
+    const { data: sessData, error: sessErr } = await supabase.auth.getSession()
+    if (sessErr) {
+      console.warn('[sync] getSession error:', sessErr)
+    } else if (sessData?.session?.user) {
+      return 'ok'
+    }
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) return 'error'
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin },
+    })
+    if (error) {
+      console.warn('[sync] signInWithOtp error:', error)
+      return 'error'
+    }
+    return 'sent'
+  } catch (e) {
+    console.warn('[sync] ensureAuth failed', e)
+    return 'error'
+  }
+}
+
+// The fully corrected syncNow function
 export async function syncNow(): Promise<SyncResult> {
   try {
     if (!supabase) return 'disabled'
@@ -61,14 +95,11 @@ export async function syncNow(): Promise<SyncResult> {
       return 'error'
     }
 
-    // ====================================================================
-    // ===== THE FINAL FIX IS HERE ========================================
     // Transform incoming snake_case from Supabase back to local camelCase
-    // ====================================================================
     const pulledLists = (lRes.data || []).map((l: any) => ({
         id: l.id, name: l.name, slug: l.slug, source: l.source, visibility: l.visibility,
         itemCount: l.itemcount, createdBy: l.createdby, createdAt: l.createdat,
-        updatedAt: l.updatedat, deletedAt: l.deletedat
+        updatedAt: l.updatedat, deletedAt: l.deletedat, count: l.itemcount // Also map itemcount to count for compatibility
     }));
     const pulledMovies = (mRes.data || []).map((m: any) => ({
         id: m.id, title: m.title, year: m.year, posterPath: m.posterpath, backdropPath: m.backdroppath,
