@@ -1,11 +1,11 @@
 import Dexie, { Table } from 'dexie'
-import { buildListFromTitles, SeedList, SeedListItem } from '../data/seed' // Import interfaces
+import { buildListFromTitles, SeedList } from '../data/seed'
 import { searchMovieId, fetchMovie } from '../services/tmdb'
 import Papa from 'papaparse'
 
 // Interfaces
 export interface Movie {
-  id: number // TMDB id
+  id: number
   title: string
   year?: number
   posterPath?: string
@@ -64,9 +64,9 @@ export class CineFileDB extends Dexie {
 export const db = new CineFileDB()
 
 // Auto-generated "Your Top" List functions
+// ... (These functions are correct and remain unchanged)
 let userTopTimer: any = null
 export async function recomputeUserTopList() {
-    // ... (This function is restored and correct)
     const listId = 'your-top'
     const now = new Date().toISOString()
     const rated = await db.movies.filter((m) => typeof m.myRating === 'number' && (m.myRating as number) > 0).toArray()
@@ -85,18 +85,18 @@ export async function recomputeUserTopList() {
       if (items.length) await db.listItems.bulkPut(items)
     })
 }
-
 export function scheduleUserTopListSync(delay = 250) {
   if (userTopTimer) clearTimeout(userTopTimer)
   userTopTimer = setTimeout(() => { recomputeUserTopList().catch((e) => console.warn('[cinefile] Top list sync failed', e)) }, delay) as any
 }
-
 db.movies.hook('creating', () => scheduleUserTopListSync())
 db.movies.hook('updating', () => scheduleUserTopListSync())
 db.movies.hook('deleting', () => scheduleUserTopListSync())
 
 
-// Seeder that processes all lists
+// ==========================================================
+// SEEDER REWRITTEN FOR TYPE SAFETY
+// ==========================================================
 export async function seedIfEmpty() {
   try {
     const existingCount = await db.lists.where('id').notEqual('your-top').count();
@@ -107,39 +107,25 @@ export async function seedIfEmpty() {
 
     console.log('[seeding] STARTING: Database is empty, proceeding with seed.');
     
-    // Explicitly typed array to fix the TS error
     const allListsToProcess: SeedList[] = [];
 
-    // Define all lists and their data sources
-    const listSources = [
-      {
-        id: 'nyt-top-100-21st',
-        name: 'New York Times 100 Best Movies of the 21st Century',
-        source: 'NYTimes',
-        importer: () => import('../data/nyt_top100_21st.json').then(m => m.default),
-        parser: (data: any[]) => data
-      },
-      {
-        id: 'rollingstone-animated-40',
-        name: 'Rolling Stone: 40 Animated (like TSPDT100)',
-        source: 'Rolling Stone',
-        importer: () => import('../data/rollingstone_40_animated_like_TSPDT100.csv?raw').then(m => m.default),
-        parser: (data: string) => (Papa.parse(data, { header: true }).data as any[]).map(r => ({ rank: Number(r.Pos), title: r.Title, year: Number(r.Year) }))
-      },
-    ];
+    // --- Process NYT List (JSON) ---
+    console.log('[seeding] Processing NYT Top 100 list...');
+    const nytRawData = (await import('../data/nyt_top100_21st.json')).default as any[];
+    const nytList = await buildListFromTitles('nyt-top-100-21st', 'New York Times 100 Best Movies of the 21st Century', 'NYTimes', nytRawData, searchMovieId);
+    if (nytList) allListsToProcess.push(nytList);
+
+    // --- Process Rolling Stone List (CSV) ---
+    console.log('[seeding] Processing Rolling Stone list...');
+    const rsRawData = (await import('../data/rollingstone_40_animated_like_TSPDT100.csv?raw')).default as string;
+    const rsParsed = Papa.parse(rsRawData, { header: true }).data as any[];
+    const rsEntries = rsParsed.map(r => ({ rank: Number(r.Pos), title: r.Title, year: Number(r.Year) })).filter(r => r.title);
+    const rsList = await buildListFromTitles('rollingstone-animated-40', 'Rolling Stone: 40 Animated (like TSPDT100)', 'Rolling Stone', rsEntries, searchMovieId);
+    if (rsList) allListsToProcess.push(rsList);
     
-    for (const source of listSources) {
-        console.log(`[seeding] Processing ${source.name}...`);
-        const rawData = await source.importer();
-        const entries = source.parser(rawData);
-        const listData = await buildListFromTitles(source.id, source.name, source.source, entries, searchMovieId);
-        if (listData) {
-            allListsToProcess.push(listData);
-        }
-    }
-    
+    // You can add more list processing blocks here following the patterns above
+
     if (allListsToProcess.length === 0) {
-      // Changed to a warning instead of an error to prevent crash if a list fails
       console.warn("Seeding process resulted in zero lists. Check data files and TMDB lookup.");
       return;
     }
@@ -152,7 +138,7 @@ export async function seedIfEmpty() {
     const moviePromises = uniqueMovieIds.map(id => fetchMovie(id));
     const movies = await Promise.all(moviePromises);
 
-    console.log(`[seeding] Fetched details for ${movies.length} movies. Saving to database...`);
+    console.log(`[seeding] Fetched details for ${movies.length} movies. Saving everything...`);
 
     await db.transaction('rw', db.movies, db.lists, db.listItems, async () => {
         await db.movies.bulkPut(movies);
@@ -172,7 +158,7 @@ export async function seedIfEmpty() {
             });
 
             const now = new Date().toISOString();
-            const listItems = list.items.map((it: SeedListItem, idx: number) => ({
+            const listItems = list.items.map((it, idx) => ({
                 id: `${list.id}:${it.rank ?? idx + 1}`,
                 listId: list.id,
                 movieId: it.movieId,
