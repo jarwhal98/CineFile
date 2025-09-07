@@ -224,4 +224,65 @@ export async function seedIfEmpty() {
       const rsEntries = (rsParsed.data as any[])
         .map((row) => ({
           rank: Number(row.Pos || row['2024'] || row['Rank']) || undefined,
-          title: (row.Title || '').toString().trim().replace
+          title: (row.Title || '').toString().trim().replace(/^"|"$/g, ''),
+          year: Number(row.Year) || undefined
+        }))
+        .filter((r) => r.title)
+      return buildListFromTitles('rollingstone-animated-40', 'Rolling Stone: 40 Animated (like TSPDT100)', 'Rolling Stone', rsEntries, searchMovieId)
+    })
+
+    // TSPDT 100 Greatest Films
+    await ensureList('tspdt-100-greatest', async () => {
+      try {
+        const csv = (await import('../data/TSPDT100.csv?raw')).default as string
+        const parsed = Papa.parse(csv, { header: true })
+        const entries = (parsed.data as any[])
+          .map((row) => ({ rank: Number(row.Pos || row['2024']) || undefined, title: (row.Title || '').toString().trim(), year: Number(row.Year) || undefined }))
+          .filter((r) => r.title)
+        return buildListFromTitles('tspdt-100-greatest', 'TSPDT 100 Greatest Films', 'TSPDT', entries, searchMovieId)
+      } catch {
+        console.warn('[cinefile] TSPDT100 seed not found, skipping')
+        return undefined
+      }
+    })
+
+    // TSPDT 21st Century’s Most Acclaimed Films
+    await ensureList('tspdt-21st-most-acclaimed', async () => {
+      try {
+        const csv = (await import('../data/TSPDT21st.csv?raw')).default as string
+        const parsed = Papa.parse(csv, { header: true })
+        const entries = (parsed.data as any[])
+          .map((row) => ({ rank: Number(row.Pos || row['2024']) || undefined, title: (row.Title || '').toString().trim(), year: Number(row.Year) || undefined }))
+          .filter((r) => r.title)
+        return buildListFromTitles('tspdt-21st-most-acclaimed', 'TSPDT 21st Century’s Most Acclaimed Films', 'TSPDT', entries, searchMovieId)
+      } catch {
+        console.warn('[cinefile] TSPDT 21st seed not found, skipping')
+        return undefined
+      }
+    })
+
+    // Variety 100 Best Horror (optional if CSV present)
+    await ensureList('variety-100-best-horror', async () => {
+      try {
+        const varietyMap = import.meta.glob('../data/variety_100_best_horror.csv', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
+        const varietyCsv = varietyMap['../data/variety_100_best_horror.csv']
+        if (!varietyCsv) return undefined
+        const parsed = Papa.parse(varietyCsv, { header: true })
+        const entries = (parsed.data as any[])
+          .map((row) => ({ rank: Number(row.Pos || row.Rank || row['#']) || undefined, title: (row.Title || '').toString().trim(), year: Number(row.Year) || undefined }))
+          .filter((r) => r.title)
+        return buildListFromTitles('variety-100-best-horror', 'Variety 100 Best Horror Movies of All Time', 'Variety', entries, searchMovieId)
+      } catch {
+        console.info('[cinefile] Variety list data not present, skipping auto-seed')
+        return undefined
+      }
+    })
+
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('cinefile:seedDone', '1')
+    }
+    console.info('[cinefile] Seed completed')
+  } catch (e) {
+    console.error('[seeding] CRITICAL FAILURE: The seed process failed with an error.', e)
+  }
+}
