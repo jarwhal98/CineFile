@@ -3,11 +3,12 @@ import axios from 'axios'
 const API_BASE = 'https://api.themoviedb.org/3'
 const IMG_BASE = 'https://image.tmdb.org/t/p/w342'
 
+// ====================================================================
+// ===== THE FIX IS HERE ==============================================
+// ====================================================================
+// This function is now simplified to ONLY use the environment variable.
 export function getTmdbKey() {
-  // Prefer a build-time env key if provided; fallback to localStorage
-  const envKey = (import.meta as any)?.env?.VITE_TMDB_API_KEY as string | undefined
-  if (envKey && envKey.trim()) return envKey.trim()
-  return localStorage.getItem('cinefile.tmdbKey') || ''
+  return import.meta.env.VITE_TMDB_API_KEY || '';
 }
 
 export function posterUrl(posterPath?: string) {
@@ -16,6 +17,9 @@ export function posterUrl(posterPath?: string) {
 
 export async function fetchMovie(tmdbId: number) {
   const key = getTmdbKey()
+  // Added a check here for safety, just in case
+  if (!key) throw new Error('TMDB API key is missing.');
+  
   const { data } = await axios.get(`${API_BASE}/movie/${tmdbId}`, {
     params: { api_key: key, append_to_response: 'credits,release_dates' }
   })
@@ -85,7 +89,7 @@ export async function searchMovies(query: string, year?: number): Promise<Array<
   return results.slice(0, 20).map((r) => ({
     id: r.id,
     title: r.title,
-    year: r.release_date ? Number(String(r.release_date).slice(0, 4)) : undefined,
+    year: r.release_date ? Number(String(r.release_date.slice(0, 4))) : undefined,
     posterPath: r.poster_path || undefined,
     tmdbRating: typeof r.vote_average === 'number' ? Math.round(r.vote_average * 10) / 10 : undefined
   }))
