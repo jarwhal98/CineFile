@@ -11,7 +11,16 @@ export interface ListItem {
   id: string; listId: string; movieId: number; rank?: number; addedAt?: string;
 }
 export interface ListDef {
-  id:string; name: string; slug?: string; source?: string; itemCount?: number; createdBy?: string; createdAt?: string; updatedAt?: string; visibility?: 'private' | 'public';
+  id:string;
+  name: string;
+  slug?: string;
+  source?: string;
+  count?: number; // THIS LINE IS RESTORED
+  itemCount?: number;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  visibility?: 'private' | 'public';
 }
 
 // Dexie DB Class
