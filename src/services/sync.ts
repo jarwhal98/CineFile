@@ -4,6 +4,31 @@ import { supabase } from './supabase'
 type EnsureAuthResult = 'ok' | 'sent' | 'disabled' | 'error'
 type SyncResult = 'ok' | 'disabled' | 'error'
 
+export async function ensureAuth(email: string): Promise<EnsureAuthResult> {
+  try {
+    if (!supabase) return 'disabled'
+    const { data: sessData, error: sessErr } = await supabase.auth.getSession()
+    if (sessErr) {
+      console.warn('[sync] getSession error:', sessErr)
+    } else if (sessData?.session?.user) {
+      return 'ok'
+    }
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) return 'error'
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin },
+    })
+    if (error) {
+      console.warn('[sync] signInWithOtp error:', error)
+      return 'error'
+    }
+    return 'sent'
+  } catch (e) {
+    console.warn('[sync] ensureAuth failed', e)
+    return 'error'
+  }
+}
+
 export async function syncNow(): Promise<SyncResult> {
   try {
     if (!supabase) return 'disabled'
@@ -14,7 +39,6 @@ export async function syncNow(): Promise<SyncResult> {
     }
     const userId = sessData.session.user.id
 
-    // ---- PUSH (Dexie → Supabase)
     const [localMovies, localLists, localListItems] = await Promise.all([
       db.movies.toArray(),
       db.lists.toArray(),
@@ -22,48 +46,20 @@ export async function syncNow(): Promise<SyncResult> {
     ])
 
     const listsPayload = localLists.map((l: any) => ({
-      id: l.id,
-      name: l.name,
-      slug: l.slug,
-      source: l.source,
-      visibility: l.visibility,
-      itemcount: l.itemCount,
-      createdby: l.createdBy,
-      createdat: l.createdAt,
-      updatedat: l.updatedAt,
-      deletedat: l.deletedAt,
-      user_id: userId
+      id: l.id, name: l.name, slug: l.slug, source: l.source, visibility: l.visibility,
+      itemcount: l.itemCount, createdby: l.createdBy, createdat: l.createdAt,
+      updatedat: l.updatedAt, deletedat: l.deletedAt, user_id: userId
     }));
     
     const moviesPayload = localMovies.map((m: any) => ({
-        id: m.id,
-        title: m.title,
-        year: m.year,
-        posterpath: m.posterPath,
-        backdroppath: m.backdropPath,
-        directors: m.directors,
-        cast: m.cast,
-        tmdb_rating: m.tmdbRating,
-        seen: m.seen,
-        my_rating: m.myRating,
-        watched_at: m.watchedAt,
-        runtime: m.runtime,
-        genres: m.genres,
-        overview: m.overview,
-        user_id: userId
+        id: m.id, title: m.title, year: m.year, posterpath: m.posterPath, backdroppath: m.backdropPath,
+        directors: m.directors, cast: m.cast, tmdb_rating: m.tmdbRating, seen: m.seen,
+        my_rating: m.myRating, watched_at: m.watchedAt, runtime: m.runtime,
+        genres: m.genres, overview: m.overview, user_id: userId
     }));
 
-    // ====================================================================
-    // ===== THE FINAL FIX IS HERE ========================================
-    // Removing the 'addedat' property to match your Supabase table
-    // ====================================================================
     const listItemsPayload = localListItems.map((li: any) => ({
-        id: li.id,
-        listid: li.listId,
-        movieid: li.movieId,
-        rank: li.rank,
-        // addedat: li.addedAt, // This line is now removed
-        user_id: userId
+        id: li.id, listid: li.listId, movieid: li.movieId, rank: li.rank, user_id: userId
     }));
     
     const chunk = <T,>(arr: T[], size = 500) =>
@@ -84,8 +80,6 @@ export async function syncNow(): Promise<SyncResult> {
       if (error) { console.warn('[sync] upsert list_items error:', error); return 'error' }
     }
 
-    // ---- PULL (Supabase → Dexie)
-    // ... (rest of the function is correct and unchanged)
     const [mRes, lRes, liRes] = await Promise.all([
       supabase.from('movies').select('*'),
       supabase.from('lists').select('*'),
@@ -98,7 +92,6 @@ export async function syncNow(): Promise<SyncResult> {
     }
 
     await db.transaction('rw', db.movies, db.lists, db.listItems, async () => {
-      // Clear local data before pulling to ensure a clean slate
       await db.lists.clear();
       await db.movies.clear();
       await db.listItems.clear();
