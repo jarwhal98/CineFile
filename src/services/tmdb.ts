@@ -3,10 +3,6 @@ import axios from 'axios'
 const API_BASE = 'https://api.themoviedb.org/3'
 const IMG_BASE = 'https://image.tmdb.org/t/p/w342'
 
-// ====================================================================
-// ===== THE FIX IS HERE ==============================================
-// ====================================================================
-// This function is now simplified to ONLY use the environment variable.
 export function getTmdbKey() {
   return import.meta.env.VITE_TMDB_API_KEY || '';
 }
@@ -17,7 +13,6 @@ export function posterUrl(posterPath?: string) {
 
 export async function fetchMovie(tmdbId: number) {
   const key = getTmdbKey()
-  // Added a check here for safety, just in case
   if (!key) throw new Error('TMDB API key is missing.');
   
   const { data } = await axios.get(`${API_BASE}/movie/${tmdbId}`, {

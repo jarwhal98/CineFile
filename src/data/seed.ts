@@ -24,13 +24,18 @@ export async function buildListFromTitles(
   source: string | undefined,
   entries: Array<{ rank?: number; title: string; year?: number }>,
   search: (title: string, year?: number) => Promise<number | undefined>
-): Promise<SeedList> {
+): Promise<SeedList | undefined> {
   const items: SeedListItem[] = []
+  const movies: SeedMovie[] = [];
+  
   for (const e of entries) {
     const tmdbId = await search(e.title, e.year)
     if (!tmdbId) continue
     items.push({ movieId: tmdbId, rank: e.rank })
   }
+
+  if (items.length === 0) return undefined;
+
   return { id, name, source, items }
 }
 
