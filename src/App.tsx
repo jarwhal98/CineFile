@@ -4,7 +4,8 @@ import { PasscodeGate } from './components/PasscodeGate'
 import ListsManage from './pages/Lists'
 import Settings from './pages/Settings'
 import React, { Suspense, useEffect } from 'react'
-import { db } from './store/db'
+// CHANGE 1: Import the seedIfEmpty function
+import { db, seedIfEmpty } from './store/db'
 import ListDetail from './pages/ListDetail'
 import MoviePage from './pages/Movie'
 import SearchPage from './pages/Search'
@@ -14,12 +15,16 @@ const AddList = React.lazy(() => import('./pages/AddList'))
 
 export default function App() {
   useEffect(() => {
-    // Warm up DB to surface errors early
-    db.open().catch((e) => {
+    // Warm up DB and run the one-time seed process
+    db.open().then(() => {
+      // CHANGE 2: Call the seed function after the DB is open
+      seedIfEmpty();
+    }).catch((e) => {
       // eslint-disable-next-line no-console
       console.error('DB open failed', e)
     })
-  }, [])
+  }, []) // The empty array ensures this runs only once on startup
+
   return (
     <PasscodeGate>
       <AppLayout>
