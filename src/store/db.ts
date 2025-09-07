@@ -114,60 +114,114 @@ db.movies.hook('creating', () => scheduleUserTopListSync())
 db.movies.hook('updating', () => scheduleUserTopListSync())
 db.movies.hook('deleting', () => scheduleUserTopListSync())
 
-// ==========================================================
-// MODIFIED SEED FUNCTION WITH DETAILED LOGGING
-// ==========================================================
+// Simple first-run seeding (idempotent): if there are no lists, load from seed data
 export async function seedIfEmpty() {
-  console.log('[seeding] Running seedIfEmpty() check...');
   try {
-    const seededFlag = (typeof localStorage !== 'undefined') && localStorage.getItem('cinefile:seedDone') === '1'
-    const existingCount = await db.lists.count()
-    console.log(`[seeding] Flag check: seededFlag = ${seededFlag}, existingCount = ${existingCount}`);
-
-    if (seededFlag || existingCount > 0) {
-      console.log('[seeding] SKIPPED: Seeding conditions not met.');
-      return
-    }
-    
-    console.log('[seeding] STARTING: Conditions met, proceeding with seed.');
-
-    const [{ default: baseSeed, buildListFromTitles }, { searchMovieId }, PapaMod] = await Promise.all([
+  const [{ default: baseSeed, buildListFromTitles }, { searchMovieId }, PapaMod] = await Promise.all([
       import('../data/seed'),
       import('../services/tmdb'),
       import('papaparse')
     ])
     const Papa: any = (PapaMod as any).default ?? PapaMod
 
+    // Cleanup: remove any stray list with id or name 'movies'
+    try {
+      await db.transaction('rw', db.lists, db.listItems, async () => {
+        const all = await db.lists.toArray()
+        const bad = all.filter((l) => l.id === 'movies' || (l.name || '').trim().toLowerCase() === 'movies')
+        for (const l of bad) {
+          await db.listItems.where('listId').equals(l.id).delete()
+          await db.lists.delete(l.id)
+        }
+        if (bad.length > 0) console.info('[cinefile] Removed stray list(s):', bad.map((b) => b.id).join(', '))
+      })
+    } catch (e) {
+      console.warn('[cinefile] Cleanup failed while removing stray list "movies"', e)
+    }
+
+  const insertList = async (lst: any) => {
+      if (!lst) return
+      await db.transaction('rw', db.lists, db.listItems, async () => {
+        const now = new Date().toISOString()
+        await db.lists.put({
+          id: lst.id,
+          name: lst.name,
+          source: lst.source,
+          slug: lst.source || 'Imported',
+          itemCount: lst.items?.length || 0,
+          count: lst.items?.length || 0,
+          createdAt: now,
+          updatedAt: now,
+          createdBy: 'system',
+          visibility: 'public'
+        })
+        if (lst.items?.length) {
+          // ==========================================================
+          // ===== THE FIX IS HERE ======================================
+          // We must add the 'id' property to each item before saving.
+          // ==========================================================
+          const items = lst.items.map((it: any, idx: number) => ({
+            id: `${lst.id}:${it.rank ?? idx + 1}`, // This creates the required primary key
+            listId: lst.id,
+            movieId: it.movieId,
+            rank: it.rank ?? idx + 1,
+            addedAt: now
+          }))
+          await db.listItems.bulkPut(items)
+        }
+      })
+    }
+
+    const ensureList = async (id: string, builder: () => Promise<any | undefined>) => {
+      const existing = await db.lists.get(id)
+      if (!existing) {
+        const lst = await builder()
+        if (lst) await insertList(lst)
+        return
+      }
+      // Backfill items if list exists but has no items
+      const currentItems = await db.listItems.where('listId').equals(id).count()
+      if (currentItems === 0) {
+        const lst = await builder()
+        if (lst && lst.items?.length) {
+          await db.transaction('rw', db.lists, db.listItems, async () => {
+            const items = lst.items.map((it: any, idx: number) => ({
+              id: `${id}:${it.rank ?? idx + 1}`,
+              listId: id,
+              movieId: it.movieId,
+              rank: it.rank ?? idx + 1
+            }))
+            await db.listItems.bulkPut(items)
+            await db.lists.update(id, { count: items.length, itemCount: items.length, updatedAt: new Date().toISOString() })
+          })
+        }
+      }
+    }
+
+    // Gate seeding to true first-run only: if already seeded or there are any lists, skip
+    const seededFlag = (typeof localStorage !== 'undefined') && localStorage.getItem('cinefile:seedDone') === '1'
+    const existingCount = await db.lists.count()
+    if (seededFlag || existingCount > 0) {
+      console.info('[cinefile] Seed skipped (seeded flag or existing lists)')
+      return
+    }
+
     // First-run seed
     if (baseSeed.movies?.length) {
-      console.log(`[seeding] Found ${baseSeed.movies.length} pre-compiled movies in seed file. Inserting...`);
       await db.movies.bulkPut(baseSeed.movies as any)
-      console.log('[seeding] Pre-compiled movies inserted.');
-    } else {
-      console.log('[seeding] No pre-compiled movies found in seed file.');
     }
 
     // NYT Top 100 (21st)
-    console.log('[seeding] Processing NYT Top 100 list...');
-    const nytRaw: Array<{ rank: number; title: string; year?: number }> = (await import('../data/nyt_top100_21st.json')).default as any
-    const nytList = await buildListFromTitles('nyt-top-100-21st', 'New York Times 100 Best Movies of the 21st Century', 'NYTimes', nytRaw, searchMovieId)
-    if (nytList) {
-        await db.lists.put(nytList as any);
-        if(nytList.items) await db.listItems.bulkPut(nytList.items as any);
-        console.log('[seeding] NYT Top 100 list processed.');
-    } else {
-        console.warn('[seeding] NYT Top 100 list returned null from builder.');
-    }
-    
-    // ... Additional list processing would go here with similar logging ...
+    await ensureList('nyt-top-100-21st', async () => {
+      const nytRaw: Array<{ rank: number; title: string; year?: number }> = (await import('../data/nyt_top100_21st.json')).default as any
+      return buildListFromTitles('nyt-top-100-21st', 'New York Times 100 Best Movies of the 21st Century', 'NYTimes', nytRaw, searchMovieId)
+    })
 
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('cinefile:seedDone', '1')
-      console.log('[seeding] Set "seedDone" flag in localStorage.');
-    }
-    console.log('[seeding] Seed process COMPLETED.');
-
-  } catch (e) {
-    console.error('[seeding] CRITICAL FAILURE: The seed process failed with an error.', e);
-  }
-}
+    // Rolling Stone Animated 40 
+    await ensureList('rollingstone-animated-40', async () => {
+      const rsCsv = (await import('../data/rollingstone_40_animated_like_TSPDT100.csv?raw')).default as string
+      const rsParsed = Papa.parse(rsCsv, { header: true })
+      const rsEntries = (rsParsed.data as any[])
+        .map((row) => ({
+          rank: Number(row.Pos || row['2024'] || row['Rank']) || undefined,
+          title: (row.Title || '').toString().trim().replace
