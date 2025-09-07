@@ -297,4 +297,3 @@ function ProgressSquare({ title, pct, size, watched, total }: { title: string; p
     </Box>
   )
 }
-      
