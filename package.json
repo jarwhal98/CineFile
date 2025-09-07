@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "echo '--- VERCEL ENV VARS ---' && printenv | grep VITE_ && echo '--- END ENV VARS ---' && tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "format": "prettier --write .",
